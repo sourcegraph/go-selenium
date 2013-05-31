@@ -220,8 +220,14 @@ func (wd *remoteWD) stringCommand(urlTemplate string) (v string, err error) {
 	return
 }
 
-func (wd *remoteWD) voidCommand(urlTemplate string, data []byte) (err error) {
-	_, err = wd.send("POST", wd.url(urlTemplate, wd.id), data)
+func (wd *remoteWD) voidCommand(urlTemplate string, params interface{}) (err error) {
+	var data []byte
+	if params != nil {
+		data, err = json.Marshal(params)
+	}
+	if err == nil {
+		_, err = wd.send("POST", wd.url(urlTemplate, wd.id), data)
+	}
 	return
 
 }
@@ -280,19 +286,11 @@ type timeoutParam struct {
 }
 
 func (wd *remoteWD) SetAsyncScriptTimeout(ms uint) error {
-	if data, err := json.Marshal(timeoutParam{ms}); err == nil {
-		return wd.voidCommand("/session/%s/timeouts/async_script", data)
-	} else {
-		return err
-	}
+	return wd.voidCommand("/session/%s/timeouts/async_script", timeoutParam{ms})
 }
 
 func (wd *remoteWD) SetImplicitWaitTimeout(ms uint) error {
-	if data, err := json.Marshal(timeoutParam{ms}); err == nil {
-		return wd.voidCommand("/session/%s/timeouts/implicit_wait", data)
-	} else {
-		return err
-	}
+	return wd.voidCommand("/session/%s/timeouts/implicit_wait", timeoutParam{ms})
 }
 
 func (wd *remoteWD) AvailableEngines() ([]string, error) {
@@ -311,26 +309,15 @@ func (wd *remoteWD) DeactivateEngine() error {
 	return wd.voidCommand("session/%s/ime/deactivate", nil)
 }
 
-func (wd *remoteWD) ActivateEngine(engine string) error {
-	params := map[string]string{
-		"engine": engine,
-	}
-
-	data, err := json.Marshal(params)
-	if err != nil {
-		return err
-	}
-
-	return wd.voidCommand("/session/%s/ime/activate", data)
+func (wd *remoteWD) ActivateEngine(engine string) (err error) {
+	return wd.voidCommand("/session/%s/ime/activate", map[string]string{"engine": engine})
 }
 
-func (wd *remoteWD) Quit() error {
-	_, err := wd.execute("DELETE", wd.url("/session/%s", wd.id), nil)
-	if err == nil {
+func (wd *remoteWD) Quit() (err error) {
+	if _, err = wd.execute("DELETE", wd.url("/session/%s", wd.id), nil); err == nil {
 		wd.id = ""
 	}
-
-	return err
+	return
 }
 
 func (wd *remoteWD) CurrentWindowHandle() (string, error) {
@@ -346,16 +333,7 @@ func (wd *remoteWD) CurrentURL() (string, error) {
 }
 
 func (wd *remoteWD) Get(url string) error {
-	params := map[string]string{
-		"url": url,
-	}
-	data, err := json.Marshal(params)
-	if err != nil {
-		return err
-	}
-	_, err = wd.execute("POST", wd.url("/session/%s/url", wd.id), data)
-
-	return err
+	return wd.voidCommand("/session/%s/url", map[string]string{"url": url})
 }
 
 func (wd *remoteWD) Forward() error {
@@ -378,23 +356,18 @@ func (wd *remoteWD) PageSource() (string, error) {
 	return wd.stringCommand("/session/%s/source")
 }
 
-func (wd *remoteWD) find(by, value, suffix, url string) ([]byte, error) {
-	params := map[string]string{
-		"using": by,
-		"value": value,
+func (wd *remoteWD) find(by, value, suffix, url string) (v []byte, err error) {
+	params := map[string]string{"using": by, "value": value}
+	var data []byte
+	if data, err = json.Marshal(params); err == nil {
+		if url == "" {
+			url = "/session/%s/element"
+		}
+		urlTemplate := url + suffix
+		url = wd.url(urlTemplate, wd.id)
+		v, err = wd.execute("POST", url, data)
 	}
-	data, err := json.Marshal(params)
-	if err != nil {
-		return nil, err
-	}
-
-	if url == "" {
-		url = "/session/%s/element"
-	}
-
-	urlTemplate := url + suffix
-	url = wd.url(urlTemplate, wd.id)
-	return wd.execute("POST", url, data)
+	return
 }
 
 func decodeElement(wd *remoteWD, data []byte) (WebElement, error) {
@@ -403,7 +376,6 @@ func decodeElement(wd *remoteWD, data []byte) (WebElement, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	elem := &remoteWE{wd, reply.Value.ELEMENT}
 	return elem, nil
 }
@@ -413,7 +385,6 @@ func (wd *remoteWD) FindElement(by, value string) (WebElement, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	return decodeElement(wd, res)
 }
 
@@ -423,12 +394,10 @@ func decodeElements(wd *remoteWD, data []byte) ([]WebElement, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	elems := make([]WebElement, len(reply.Value))
 	for i, elem := range reply.Value {
 		elems[i] = &remoteWE{wd, elem.ELEMENT}
 	}
-
 	return elems, nil
 }
 
@@ -437,7 +406,6 @@ func (wd *remoteWD) FindElements(by, value string) ([]WebElement, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	return decodeElements(wd, res)
 }
 
@@ -447,14 +415,8 @@ func (wd *remoteWD) Close() error {
 }
 
 func (wd *remoteWD) SwitchWindow(name string) error {
-	params := map[string]string{
-		"name": name,
-	}
-	data, err := json.Marshal(params)
-	if err != nil {
-		return err
-	}
-	return wd.voidCommand("/session/%s/window", data)
+	params := map[string]string{"name": name}
+	return wd.voidCommand("/session/%s/window", params)
 }
 
 func (wd *remoteWD) CloseWindow(name string) error {
@@ -463,14 +425,8 @@ func (wd *remoteWD) CloseWindow(name string) error {
 }
 
 func (wd *remoteWD) SwitchFrame(frame string) error {
-	params := map[string]string{
-		"id": frame,
-	}
-	data, err := json.Marshal(params)
-	if err != nil {
-		return err
-	}
-	return wd.voidCommand("/session/%s/frame", data)
+	params := map[string]string{"id": frame}
+	return wd.voidCommand("/session/%s/frame", params)
 }
 
 func (wd *remoteWD) ActiveElement() (WebElement, error) {
@@ -479,7 +435,6 @@ func (wd *remoteWD) ActiveElement() (WebElement, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	return decodeElement(wd, res)
 }
 
@@ -499,15 +454,8 @@ func (wd *remoteWD) GetCookies() ([]Cookie, error) {
 }
 
 func (wd *remoteWD) AddCookie(cookie *Cookie) error {
-	params := map[string]*Cookie{
-		"cookie": cookie,
-	}
-	data, err := json.Marshal(params)
-	if err != nil {
-		return err
-	}
-
-	return wd.voidCommand("/session/%s/cookie", data)
+	params := map[string]*Cookie{"cookie": cookie}
+	return wd.voidCommand("/session/%s/cookie", params)
 }
 
 func (wd *remoteWD) DeleteAllCookies() error {
@@ -521,14 +469,8 @@ func (wd *remoteWD) DeleteCookie(name string) error {
 }
 
 func (wd *remoteWD) Click(button int) error {
-	params := map[string]int{
-		"button": button,
-	}
-	data, err := json.Marshal(params)
-	if err != nil {
-		return err
-	}
-	return wd.voidCommand("/session/%s/click", data)
+	params := map[string]int{"button": button}
+	return wd.voidCommand("/session/%s/click", params)
 }
 
 func (wd *remoteWD) DoubleClick() error {
@@ -570,15 +512,8 @@ func (wd *remoteWD) AlertText() (string, error) {
 }
 
 func (wd *remoteWD) SetAlertText(text string) error {
-	params := map[string]string{
-		"text": text,
-	}
-	data, err := json.Marshal(params)
-	if err != nil {
-		return err
-	}
-
-	return wd.voidCommand("/session/%s/alert_text", data)
+	params := map[string]string{"text": text}
+	return wd.voidCommand("/session/%s/alert_text", params)
 }
 
 func (wd *remoteWD) execScript(script string, args []interface{}, suffix string) (interface{}, error) {
@@ -645,17 +580,9 @@ func (elem *remoteWE) SendKeys(keys string) error {
 	for i, c := range keys {
 		chars[i] = string(c)
 	}
-	params := map[string][]string{
-		"value": chars,
-	}
-
-	data, err := json.Marshal(params)
-	if err != nil {
-		return err
-	}
-
-	urlTemplate := fmt.Sprintf("/session/%%s/element/%s/value", elem.id)
-	return elem.parent.voidCommand(urlTemplate, data)
+	params := map[string][]string{"value": chars}
+	urltmpl := fmt.Sprintf("/session/%%s/element/%s/value", elem.id)
+	return elem.parent.voidCommand(urltmpl, params)
 }
 
 func (elem *remoteWE) TagName() (string, error) {
@@ -684,11 +611,7 @@ func (elem *remoteWE) MoveTo(xOffset, yOffset int) error {
 		"xoffset": xOffset,
 		"yoffset": yOffset,
 	}
-	data, err := json.Marshal(params)
-	if err != nil {
-		return err
-	}
-	return elem.parent.voidCommand("/session/%s/moveto", data)
+	return elem.parent.voidCommand("/session/%s/moveto", params)
 }
 
 func (elem *remoteWE) FindElement(by, value string) (WebElement, error) {
@@ -696,7 +619,6 @@ func (elem *remoteWE) FindElement(by, value string) (WebElement, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	return decodeElement(elem.parent, res)
 }
 
@@ -705,7 +627,6 @@ func (elem *remoteWE) FindElements(by, value string) ([]WebElement, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	return decodeElements(elem.parent, res)
 }
 
