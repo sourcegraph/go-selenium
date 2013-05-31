@@ -97,8 +97,8 @@ type capabilitiesReply struct {
 	Value Capabilities
 }
 
-func isMimeType(response *http.Response, mtype string) bool {
-	if ctype, ok := response.Header["Content-Type"]; ok {
+func isMimeType(res *http.Response, mtype string) bool {
+	if ctype, ok := res.Header["Content-Type"]; ok {
 		return strings.HasPrefix(ctype[0], mtype)
 	}
 
@@ -106,13 +106,13 @@ func isMimeType(response *http.Response, mtype string) bool {
 }
 
 func newRequest(method string, url string, data []byte) (*http.Request, error) {
-	request, err := http.NewRequest(method, url, bytes.NewBuffer(data))
+	req, err := http.NewRequest(method, url, bytes.NewBuffer(data))
 	if err != nil {
 		return nil, err
 	}
-	request.Header.Add("Accept", jsonMIMEType)
+	req.Header.Add("Accept", jsonMIMEType)
 
-	return request, nil
+	return req, nil
 }
 
 func cleanNils(buf []byte) {
@@ -123,15 +123,15 @@ func cleanNils(buf []byte) {
 	}
 }
 
-func isRedirect(response *http.Response) bool {
-	switch response.StatusCode {
+func isRedirect(res *http.Response) bool {
+	switch res.StatusCode {
 	case 301, 302, 303, 307:
 		return true
 	}
 	return false
 }
 
-func (wd *remoteWD) requestURL(template string, args ...interface{}) string {
+func (wd *remoteWD) url(template string, args ...interface{}) string {
 	path := fmt.Sprintf(template, args...)
 	return wd.executor + path
 }
@@ -147,31 +147,31 @@ func (wd *remoteWD) execute(method, url string, data []byte) ([]byte, error) {
 	}
 
 	log.Printf("-> %s %s\n%s", method, url, data)
-	request, err := newRequest(method, url, data)
+	req, err := newRequest(method, url, data)
 	if err != nil {
 		return nil, err
 	}
 
-	response, err := http.DefaultClient.Do(request)
+	res, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return nil, err
 	}
 
 	// http.Client don't follow POST redirects ....
-	if (method == "POST") && isRedirect(response) {
-		url := response.Header["Location"][0]
-		request, _ = newRequest("GET", url, nil)
-		response, err = http.DefaultClient.Do(request)
+	if (method == "POST") && isRedirect(res) {
+		url := res.Header["Location"][0]
+		req, _ = newRequest("GET", url, nil)
+		res, err = http.DefaultClient.Do(req)
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	buf, err := ioutil.ReadAll(response.Body)
+	buf, err := ioutil.ReadAll(res.Body)
 	log.Printf("<- %s [%s]\n%s",
-		response.Status, response.Header["Content-Type"], buf)
+		res.Status, res.Header["Content-Type"], buf)
 	if err != nil {
-		buf = []byte(response.Status)
+		buf = []byte(res.Status)
 	}
 
 	if err != nil {
@@ -179,11 +179,11 @@ func (wd *remoteWD) execute(method, url string, data []byte) ([]byte, error) {
 	}
 
 	cleanNils(buf)
-	if response.StatusCode >= 400 {
+	if res.StatusCode >= 400 {
 		reply := new(serverReply)
 		err := json.Unmarshal(buf, reply)
 		if err != nil {
-			return nil, errors.New(fmt.Sprintf("Bad server reply status: %s", response.Status))
+			return nil, errors.New(fmt.Sprintf("Bad server reply status: %s", res.Status))
 		}
 		message, ok := errorCodes[reply.Status]
 		if !ok {
@@ -196,7 +196,7 @@ func (wd *remoteWD) execute(method, url string, data []byte) ([]byte, error) {
 	/* Some bug(?) in Selenium gets us nil values in output, json.Unmarshal is
 	* not happy about that.
 	 */
-	if isMimeType(response, jsonMIMEType) {
+	if isMimeType(res, jsonMIMEType) {
 		reply := new(serverReply)
 		err := json.Unmarshal(buf, reply)
 		if err != nil {
@@ -240,14 +240,14 @@ func NewRemote(capabilities Capabilities, executor string) (WebDriver, error) {
 }
 
 func (wd *remoteWD) stringCommand(urlTemplate string) (string, error) {
-	url := wd.requestURL(urlTemplate, wd.id)
-	response, err := wd.execute("GET", url, nil)
+	url := wd.url(urlTemplate, wd.id)
+	res, err := wd.execute("GET", url, nil)
 	if err != nil {
 		return "", err
 	}
 
 	reply := new(stringReply)
-	err = json.Unmarshal(response, reply)
+	err = json.Unmarshal(res, reply)
 	if err != nil {
 		return "", err
 	}
@@ -256,20 +256,20 @@ func (wd *remoteWD) stringCommand(urlTemplate string) (string, error) {
 }
 
 func (wd *remoteWD) voidCommand(urlTemplate string, data []byte) error {
-	url := wd.requestURL(urlTemplate, wd.id)
+	url := wd.url(urlTemplate, wd.id)
 	_, err := wd.execute("POST", url, data)
 	return err
 
 }
 
 func (wd remoteWD) stringsCommand(urlTemplate string) ([]string, error) {
-	url := wd.requestURL(urlTemplate, wd.id)
-	response, err := wd.execute("GET", url, nil)
+	url := wd.url(urlTemplate, wd.id)
+	res, err := wd.execute("GET", url, nil)
 	if err != nil {
 		return nil, err
 	}
 	reply := new(stringsReply)
-	err = json.Unmarshal(response, reply)
+	err = json.Unmarshal(res, reply)
 	if err != nil {
 		return nil, err
 	}
@@ -278,14 +278,14 @@ func (wd remoteWD) stringsCommand(urlTemplate string) ([]string, error) {
 }
 
 func (wd *remoteWD) boolCommand(urlTemplate string) (bool, error) {
-	url := wd.requestURL(urlTemplate, wd.id)
-	response, err := wd.execute("GET", url, nil)
+	url := wd.url(urlTemplate, wd.id)
+	res, err := wd.execute("GET", url, nil)
 	if err != nil {
 		return false, err
 	}
 
 	reply := new(boolReply)
-	err = json.Unmarshal(response, reply)
+	err = json.Unmarshal(res, reply)
 	if err != nil {
 		return false, err
 	}
@@ -296,7 +296,7 @@ func (wd *remoteWD) boolCommand(urlTemplate string) (bool, error) {
 // WebDriver interface implementation
 
 func (wd *remoteWD) Status() (*Status, error) {
-	url := wd.requestURL("/status")
+	url := wd.url("/status")
 	reply, err := wd.execute("GET", url, nil)
 	if err != nil {
 		return nil, err
@@ -320,14 +320,14 @@ func (wd *remoteWD) NewSession() (string, error) {
 		return "", nil
 	}
 
-	url := wd.requestURL("/session")
-	response, err := wd.execute("POST", url, data)
+	url := wd.url("/session")
+	res, err := wd.execute("POST", url, data)
 	if err != nil {
 		return "", err
 	}
 
 	reply := new(serverReply)
-	json.Unmarshal(response, reply)
+	json.Unmarshal(res, reply)
 
 	wd.id = *reply.SessionId
 
@@ -335,14 +335,14 @@ func (wd *remoteWD) NewSession() (string, error) {
 }
 
 func (wd *remoteWD) Capabilities() (Capabilities, error) {
-	url := wd.requestURL("/session/%s", wd.id)
-	response, err := wd.execute("GET", url, nil)
+	url := wd.url("/session/%s", wd.id)
+	res, err := wd.execute("GET", url, nil)
 	if err != nil {
 		return nil, err
 	}
 
 	c := new(capabilitiesReply)
-	err = json.Unmarshal(response, c)
+	err = json.Unmarshal(res, c)
 	if err != nil {
 		return nil, err
 	}
@@ -406,7 +406,7 @@ func (wd *remoteWD) ActivateEngine(engine string) error {
 }
 
 func (wd *remoteWD) Quit() error {
-	url := wd.requestURL("/session/%s", wd.id)
+	url := wd.url("/session/%s", wd.id)
 	_, err := wd.execute("DELETE", url, nil)
 	if err == nil {
 		wd.id = ""
@@ -424,20 +424,19 @@ func (wd *remoteWD) WindowHandles() ([]string, error) {
 }
 
 func (wd *remoteWD) CurrentURL() (string, error) {
-	url := wd.requestURL("/session/%s/url", wd.id)
-	response, err := wd.execute("GET", url, nil)
+	url := wd.url("/session/%s/url", wd.id)
+	res, err := wd.execute("GET", url, nil)
 	if err != nil {
 		return "", err
 	}
 	reply := new(stringReply)
-	json.Unmarshal(response, reply)
+	json.Unmarshal(res, reply)
 
 	return *reply.Value, nil
 
 }
 
 func (wd *remoteWD) Get(url string) error {
-	requestURL := wd.requestURL("/session/%s/url", wd.id)
 	params := map[string]string{
 		"url": url,
 	}
@@ -445,7 +444,7 @@ func (wd *remoteWD) Get(url string) error {
 	if err != nil {
 		return err
 	}
-	_, err = wd.execute("POST", requestURL, data)
+	_, err = wd.execute("POST", wd.url("/session/%s/url", wd.id), data)
 
 	return err
 }
@@ -485,7 +484,7 @@ func (wd *remoteWD) find(by, value, suffix, url string) ([]byte, error) {
 	}
 
 	urlTemplate := url + suffix
-	url = wd.requestURL(urlTemplate, wd.id)
+	url = wd.url(urlTemplate, wd.id)
 	return wd.execute("POST", url, data)
 }
 
@@ -501,12 +500,12 @@ func decodeElement(wd *remoteWD, data []byte) (WebElement, error) {
 }
 
 func (wd *remoteWD) FindElement(by, value string) (WebElement, error) {
-	response, err := wd.find(by, value, "", "")
+	res, err := wd.find(by, value, "", "")
 	if err != nil {
 		return nil, err
 	}
 
-	return decodeElement(wd, response)
+	return decodeElement(wd, res)
 }
 
 func decodeElements(wd *remoteWD, data []byte) ([]WebElement, error) {
@@ -525,16 +524,16 @@ func decodeElements(wd *remoteWD, data []byte) ([]WebElement, error) {
 }
 
 func (wd *remoteWD) FindElements(by, value string) ([]WebElement, error) {
-	response, err := wd.find(by, value, "s", "")
+	res, err := wd.find(by, value, "s", "")
 	if err != nil {
 		return nil, err
 	}
 
-	return decodeElements(wd, response)
+	return decodeElements(wd, res)
 }
 
 func (wd *remoteWD) Close() error {
-	url := wd.requestURL("/session/%s/window", wd.id)
+	url := wd.url("/session/%s/window", wd.id)
 	_, err := wd.execute("DELETE", url, nil)
 	return err
 }
@@ -567,17 +566,17 @@ func (wd *remoteWD) SwitchFrame(frame string) error {
 }
 
 func (wd *remoteWD) ActiveElement() (WebElement, error) {
-	url := wd.requestURL("/session/%s/element/active", wd.id)
-	response, err := wd.execute("GET", url, nil)
+	url := wd.url("/session/%s/element/active", wd.id)
+	res, err := wd.execute("GET", url, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	return decodeElement(wd, response)
+	return decodeElement(wd, res)
 }
 
 func (wd *remoteWD) GetCookies() ([]Cookie, error) {
-	url := wd.requestURL("/session/%s/cookie", wd.id)
+	url := wd.url("/session/%s/cookie", wd.id)
 	data, err := wd.execute("GET", url, nil)
 	if err != nil {
 		return nil, err
@@ -605,13 +604,13 @@ func (wd *remoteWD) AddCookie(cookie *Cookie) error {
 }
 
 func (wd *remoteWD) DeleteAllCookies() error {
-	url := wd.requestURL("/session/%s/cookie", wd.id)
+	url := wd.url("/session/%s/cookie", wd.id)
 	_, err := wd.execute("DELETE", url, nil)
 	return err
 }
 
 func (wd *remoteWD) DeleteCookie(name string) error {
-	url := wd.requestURL("/session/%s/cookie/%s", wd.id, name)
+	url := wd.url("/session/%s/cookie/%s", wd.id, name)
 	_, err := wd.execute("DELETE", url, nil)
 	return err
 }
@@ -689,14 +688,14 @@ func (wd *remoteWD) execScript(script string, args []interface{}, suffix string)
 	}
 
 	template := "/session/%s/execute" + suffix
-	url := wd.requestURL(template, wd.id)
-	response, err := wd.execute("POST", url, data)
+	url := wd.url(template, wd.id)
+	res, err := wd.execute("POST", url, data)
 	if err != nil {
 		return nil, err
 	}
 
 	reply := new(anyReply)
-	err = json.Unmarshal(response, reply)
+	err = json.Unmarshal(res, reply)
 	if err != nil {
 		return nil, err
 	}
@@ -789,22 +788,22 @@ func (elem *remoteWE) MoveTo(xOffset, yOffset int) error {
 
 func (elem *remoteWE) FindElement(by, value string) (WebElement, error) {
 	url := fmt.Sprintf("/session/%%s/element/%s/element", elem.id)
-	response, err := elem.parent.find(by, value, "", url)
+	res, err := elem.parent.find(by, value, "", url)
 	if err != nil {
 		return nil, err
 	}
 
-	return decodeElement(elem.parent, response)
+	return decodeElement(elem.parent, res)
 }
 
 func (elem *remoteWE) FindElements(by, value string) ([]WebElement, error) {
 	url := fmt.Sprintf("/session/%%s/element/%s/element", elem.id)
-	response, err := elem.parent.find(by, value, "s", url)
+	res, err := elem.parent.find(by, value, "s", url)
 	if err != nil {
 		return nil, err
 	}
 
-	return decodeElements(elem.parent, response)
+	return decodeElements(elem.parent, res)
 }
 
 func (elem *remoteWE) boolQuery(urlTemplate string) (bool, error) {
@@ -835,13 +834,13 @@ func (elem *remoteWE) GetAttribute(name string) (string, error) {
 func (elem *remoteWE) location(suffix string) (*Point, error) {
 	wd := elem.parent
 	path := "/session/%s/element/%s/location" + suffix
-	url := wd.requestURL(path, wd.id, elem.id)
-	response, err := wd.execute("GET", url, nil)
+	url := wd.url(path, wd.id, elem.id)
+	res, err := wd.execute("GET", url, nil)
 	if err != nil {
 		return nil, err
 	}
 	reply := new(locationReply)
-	err = json.Unmarshal(response, reply)
+	err = json.Unmarshal(res, reply)
 	if err != nil {
 		return nil, err
 	}
@@ -859,13 +858,13 @@ func (elem *remoteWE) LocationInView() (*Point, error) {
 
 func (elem *remoteWE) Size() (*Size, error) {
 	wd := elem.parent
-	url := wd.requestURL("/session/%s/element/%s/size", wd.id, elem.id)
-	response, err := wd.execute("GET", url, nil)
+	url := wd.url("/session/%s/element/%s/size", wd.id, elem.id)
+	res, err := wd.execute("GET", url, nil)
 	if err != nil {
 		return nil, err
 	}
 	reply := new(sizeReply)
-	err = json.Unmarshal(response, reply)
+	err = json.Unmarshal(res, reply)
 	if err != nil {
 		return nil, err
 	}
