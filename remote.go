@@ -97,16 +97,6 @@ type capabilitiesReply struct {
 	Value Capabilities
 }
 
-func newRequest(method string, url string, data []byte) (*http.Request, error) {
-	req, err := http.NewRequest(method, url, bytes.NewBuffer(data))
-	if err != nil {
-		return nil, err
-	}
-	req.Header.Add("Accept", jsonMIMEType)
-
-	return req, nil
-}
-
 func cleanNils(buf []byte) {
 	for i, b := range buf {
 		if b == 0 {
@@ -131,10 +121,11 @@ func (wd *remoteWD) execute(method, url string, data []byte) ([]byte, error) {
 	}
 
 	log.Printf("-> %s %s\n%s", method, url, data)
-	req, err := newRequest(method, url, data)
+	req, err := http.NewRequest(method, url, bytes.NewBuffer(data))
 	if err != nil {
 		return nil, err
 	}
+	req.Header.Add("Accept", jsonMIMEType)
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
