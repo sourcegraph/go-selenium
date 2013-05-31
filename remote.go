@@ -192,7 +192,7 @@ func (wd *remoteWD) execute(method, url string, data []byte) ([]byte, error) {
 */
 func NewRemote(capabilities Capabilities, executor string) (WebDriver, error) {
 
-	if len(executor) == 0 {
+	if executor == "" {
 		executor = DEFAULT_EXECUTOR
 	}
 
@@ -447,7 +447,7 @@ func (wd *remoteWD) find(by, value, suffix, url string) ([]byte, error) {
 		return nil, err
 	}
 
-	if len(url) == 0 {
+	if url == "" {
 		url = "/session/%s/element"
 	}
 

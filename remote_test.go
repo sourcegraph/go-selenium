@@ -69,7 +69,7 @@ func TestStatus(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if len(status.OS.Name) == 0 {
+	if status.OS.Name == "" {
 		t.Fatal("No OS")
 	}
 }
@@ -86,7 +86,7 @@ func TestNewSession(t *testing.T) {
 		t.Fatalf("error in new session - %s", err)
 	}
 
-	if len(sid) == 0 {
+	if sid == "" {
 		t.Fatal("Empty session id")
 	}
 
@@ -139,7 +139,7 @@ func TestCurrentWindowHandle(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if len(handle) == 0 {
+	if handle == "" {
 		t.Fatal("Empty handle")
 	}
 }
@@ -153,7 +153,7 @@ func TestWindowHandles(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if len(handles) == 0 {
+	if handles == "" {
 		t.Fatal("No handles")
 	}
 }
@@ -271,7 +271,7 @@ func TestFindElement(t *testing.T) {
 		t.Fatal("Can't convert to *remoteWE")
 	}
 
-	if len(we.id) == 0 {
+	if we.id == "" {
 		t.Fatal("Empty element")
 	}
 
@@ -299,7 +299,7 @@ func TestFindElements(t *testing.T) {
 		t.Fatal("Can't convert to *remoteWE")
 	}
 
-	if len(we.id) == 0 {
+	if we.id == "" {
 		t.Fatal("Empty element")
 	}
 
@@ -384,7 +384,7 @@ func TestGetCookies(t *testing.T) {
 		t.Fatal("No cookies")
 	}
 
-	if len(cookies[0].Name) == 0 {
+	if cookies[0].Name == "" {
 		t.Fatal("Empty cookie")
 	}
 }
