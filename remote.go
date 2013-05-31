@@ -97,14 +97,6 @@ type capabilitiesReply struct {
 	Value Capabilities
 }
 
-func isMimeType(res *http.Response, mtype string) bool {
-	if ctype, ok := res.Header["Content-Type"]; ok {
-		return strings.HasPrefix(ctype[0], mtype)
-	}
-
-	return false
-}
-
 func newRequest(method string, url string, data []byte) (*http.Request, error) {
 	req, err := http.NewRequest(method, url, bytes.NewBuffer(data))
 	if err != nil {
@@ -196,7 +188,7 @@ func (wd *remoteWD) execute(method, url string, data []byte) ([]byte, error) {
 	/* Some bug(?) in Selenium gets us nil values in output, json.Unmarshal is
 	* not happy about that.
 	 */
-	if isMimeType(res, jsonMIMEType) {
+	if strings.HasPrefix(res.Header.Get("Content-Type"), jsonMIMEType) {
 		reply := new(serverReply)
 		err := json.Unmarshal(buf, reply)
 		if err != nil {
