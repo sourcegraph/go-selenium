@@ -93,9 +93,6 @@ type sizeReply struct {
 type anyReply struct {
 	Value interface{}
 }
-type capabilitiesReply struct {
-	Value Capabilities
-}
 
 func (wd *remoteWD) url(template string, args ...interface{}) string {
 	path := fmt.Sprintf(template, args...)
@@ -270,45 +267,32 @@ func (wd *remoteWD) NewSession() (sessionId string, err error) {
 	return
 }
 
-func (wd *remoteWD) Capabilities() (Capabilities, error) {
-	res, err := wd.execute("GET", wd.url("/session/%s", wd.id), nil)
-	if err != nil {
-		return nil, err
+func (wd *remoteWD) Capabilities() (v Capabilities, err error) {
+	var r *reply
+	if r, err = wd.send("GET", wd.url("/session/%s", wd.id), nil); err == nil {
+		r.readValue(&v)
 	}
+	return
+}
 
-	c := new(capabilitiesReply)
-	err = json.Unmarshal(res, c)
-	if err != nil {
-		return nil, err
-	}
-
-	return c.Value, nil
+type timeoutParam struct {
+	Ms uint `json:"ms"`
 }
 
 func (wd *remoteWD) SetAsyncScriptTimeout(ms uint) error {
-	params := map[string]uint{
-		"ms": ms,
-	}
-
-	data, err := json.Marshal(params)
-	if err != nil {
+	if data, err := json.Marshal(timeoutParam{ms}); err == nil {
+		return wd.voidCommand("/session/%s/timeouts/async_script", data)
+	} else {
 		return err
 	}
-
-	return wd.voidCommand("/session/%s/timeouts/async_script", data)
 }
 
 func (wd *remoteWD) SetImplicitWaitTimeout(ms uint) error {
-	params := map[string]uint{
-		"ms": ms,
-	}
-
-	data, err := json.Marshal(params)
-	if err != nil {
+	if data, err := json.Marshal(timeoutParam{ms}); err == nil {
+		return wd.voidCommand("/session/%s/timeouts/implicit_wait", data)
+	} else {
 		return err
 	}
-
-	return wd.voidCommand("/session/%s/timeouts/implicit_wait", data)
 }
 
 func (wd *remoteWD) AvailableEngines() ([]string, error) {
