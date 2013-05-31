@@ -102,14 +102,6 @@ type capabilitiesReply struct {
 	Value Capabilities
 }
 
-func cleanNils(buf []byte) {
-	for i, b := range buf {
-		if b == 0 {
-			buf[i] = ' '
-		}
-	}
-}
-
 func (wd *remoteWD) url(template string, args ...interface{}) string {
 	path := fmt.Sprintf(template, args...)
 	return wd.executor + path
@@ -158,7 +150,6 @@ func (wd *remoteWD) execute(method, url string, data []byte) ([]byte, error) {
 	}
 	Log.Printf("<- %s (%s) [%d bytes]", res.Status, res.Header["Content-Type"], len(buf))
 
-	cleanNils(buf)
 	if res.StatusCode >= 400 {
 		reply := new(serverReply)
 		err := json.Unmarshal(buf, reply)
