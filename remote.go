@@ -110,16 +110,19 @@ func (wd *remoteWD) url(template string, args ...interface{}) string {
 	return wd.executor + path
 }
 
-func (wd *remoteWD) execute(method, url string, data []byte) ([]byte, error) {
-	client := http.DefaultClient
-	client.CheckRedirect = func(req *http.Request, via []*http.Request) error {
-		if len(via) > 10 {
-			return errors.New("max redirects")
+var httpClient = http.Client{
+	// WebDriver requires that all requests have an 'Accept: application/json' header. We must add
+	// it here because by default net/http will not include that header when following redirects.
+	CheckRedirect: func(req *http.Request, via []*http.Request) error {
+		if len(via) >= 10 {
+			return errors.New("stopped after 10 redirects")
 		}
 		req.Header.Add("Accept", jsonMIMEType)
 		return nil
-	}
+	},
+}
 
+func (wd *remoteWD) execute(method, url string, data []byte) ([]byte, error) {
 	log.Printf("-> %s %s\n%s", method, url, data)
 	req, err := http.NewRequest(method, url, bytes.NewBuffer(data))
 	if err != nil {
@@ -127,7 +130,7 @@ func (wd *remoteWD) execute(method, url string, data []byte) ([]byte, error) {
 	}
 	req.Header.Add("Accept", jsonMIMEType)
 
-	res, err := http.DefaultClient.Do(req)
+	res, err := httpClient.Do(req)
 	if err != nil {
 		return nil, err
 	}
