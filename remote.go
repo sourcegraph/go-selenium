@@ -115,14 +115,6 @@ func cleanNils(buf []byte) {
 	}
 }
 
-func isRedirect(res *http.Response) bool {
-	switch res.StatusCode {
-	case 301, 302, 303, 307:
-		return true
-	}
-	return false
-}
-
 func (wd *remoteWD) url(template string, args ...interface{}) string {
 	path := fmt.Sprintf(template, args...)
 	return wd.executor + path
@@ -147,16 +139,6 @@ func (wd *remoteWD) execute(method, url string, data []byte) ([]byte, error) {
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return nil, err
-	}
-
-	// http.Client don't follow POST redirects ....
-	if (method == "POST") && isRedirect(res) {
-		url := res.Header["Location"][0]
-		req, _ = newRequest("GET", url, nil)
-		res, err = http.DefaultClient.Do(req)
-		if err != nil {
-			return nil, err
-		}
 	}
 
 	buf, err := ioutil.ReadAll(res.Body)
