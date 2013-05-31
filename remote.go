@@ -60,14 +60,18 @@ type remoteWD struct {
 
 /* Server reply */
 type serverReply struct {
-	SessionId *string // sessionId can be null
+	SessionId string
 	Status    int
+	Value     json.RawMessage
+}
+
+type reply serverReply // TODO(sqs): redundant
+
+func (r *reply) readValue(v interface{}) error {
+	return json.Unmarshal(r.Value, v)
 }
 
 /* Various reply types, we use them to json.Unmarshal replies */
-type statusReply struct {
-	Value Status
-}
 type stringReply struct {
 	Value *string
 }
@@ -117,6 +121,16 @@ var httpClient = http.Client{
 		req.Header.Add("Accept", jsonMIMEType)
 		return nil
 	},
+}
+
+func (wd *remoteWD) send(method, url string, data []byte) (r *reply, err error) {
+	var buf []byte
+	if buf, err = wd.execute(method, url, data); err == nil {
+		if len(buf) > 0 {
+			err = json.Unmarshal(buf, &r)
+		}
+	}
+	return
 }
 
 func (wd *remoteWD) execute(method, url string, data []byte) ([]byte, error) {
@@ -266,43 +280,27 @@ func (wd *remoteWD) boolCommand(urlTemplate string) (bool, error) {
 
 // WebDriver interface implementation
 
-func (wd *remoteWD) Status() (*Status, error) {
-	url := wd.url("/status")
-	reply, err := wd.execute("GET", url, nil)
-	if err != nil {
-		return nil, err
+func (wd *remoteWD) Status() (v *Status, err error) {
+	var r *reply
+	if r, err = wd.send("GET", wd.url("/status"), nil); err == nil {
+		err = r.readValue(&v)
 	}
-
-	status := new(statusReply)
-	err = json.Unmarshal(reply, status)
-	if err != nil {
-		return nil, err
-	}
-
-	return &status.Value, nil
+	return
 }
 
-func (wd *remoteWD) NewSession() (string, error) {
+func (wd *remoteWD) NewSession() (sessionId string, err error) {
 	message := map[string]interface{}{
 		"desiredCapabilities": wd.capabilities,
 	}
-	data, err := json.Marshal(message)
-	if err != nil {
-		return "", nil
+	var data []byte
+	if data, err = json.Marshal(message); err != nil {
+		return
 	}
-
-	url := wd.url("/session")
-	res, err := wd.execute("POST", url, data)
-	if err != nil {
-		return "", err
+	if r, err := wd.send("POST", wd.url("/session"), data); err == nil {
+		sessionId = r.SessionId
+		wd.id = r.SessionId
 	}
-
-	reply := new(serverReply)
-	json.Unmarshal(res, reply)
-
-	wd.id = *reply.SessionId
-
-	return wd.id, nil
+	return
 }
 
 func (wd *remoteWD) Capabilities() (Capabilities, error) {
