@@ -43,7 +43,7 @@ var errorCodes = map[int]string{
 const (
 	SUCCESS          = 0
 	DEFAULT_EXECUTOR = "http://127.0.0.1:4444/wd/hub"
-	JSON_TYPE        = "application/json"
+	jsonMIMEType     = "application/json"
 )
 
 type remoteWD struct {
@@ -110,7 +110,7 @@ func newRequest(method string, url string, data []byte) (*http.Request, error) {
 	if err != nil {
 		return nil, err
 	}
-	request.Header.Add("Accept", JSON_TYPE)
+	request.Header.Add("Accept", jsonMIMEType)
 
 	return request, nil
 }
@@ -142,7 +142,7 @@ func (wd *remoteWD) execute(method, url string, data []byte) ([]byte, error) {
 		if len(via) > 10 {
 			return errors.New("max redirects")
 		}
-		req.Header.Add("Accept", JSON_TYPE)
+		req.Header.Add("Accept", jsonMIMEType)
 		return nil
 	}
 
@@ -196,7 +196,7 @@ func (wd *remoteWD) execute(method, url string, data []byte) ([]byte, error) {
 	/* Some bug(?) in Selenium gets us nil values in output, json.Unmarshal is
 	* not happy about that.
 	 */
-	if isMimeType(response, JSON_TYPE) {
+	if isMimeType(response, jsonMIMEType) {
 		reply := new(serverReply)
 		err := json.Unmarshal(buf, reply)
 		if err != nil {
