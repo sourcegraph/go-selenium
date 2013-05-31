@@ -1,54 +1,44 @@
-=================================
-selenium - Selenium Client For Go
-=================================
+==============================================
+go-selenium - Selenium WebDriver client for Go
+==============================================
 
-About
-=====
-This is a `Selenium`_ client for `Go`_.
-Currently it supports only the remote WebDriver client, so you'll need a
-`selenium server`_ running.
+go-selenium is a `Selenium`_ WebDriver client for `Go`_.
 
 .. _`Selenium`: http://seleniumhq.org/
 .. _`Go`: http://golang.org/
-.. _`selenium server`: http://seleniumhq.org/download/
 
 
-Changes
-=======
-See here_.
+Usage
+=====
 
-.. _here: ChangeLog
+Coming soon...
+
+
+Running tests
+=============
+
+Start Selenium WebDriver and run `go test`.
+
 
 TODO
 ====
+
 * Support Firefox profiles
 * Finish full `Selenium API`_.
-* More testing
-* `Selenium 1`_ client
-* Our own server for testing (getting out takes too much time)
-* `SauceLabs`_ integration
+* `Sauce Labs`_ integration
 
 .. _`Selenium API`: http://code.google.com/p/selenium/wiki/JsonWireProtocol
-.. _`SauceLabs`: http://saucelabs.com/docs/quickstart
-.. _`Selenium 1`: http://wiki.openqa.org/display/SRC/Specifications+for+Selenium+Remote+Control+Client+Driver+Protocol
+.. _`Sauce Labs`: http://saucelabs.com/docs/quickstart
 
-Hacking
-=======
-You'll need a Selenium server to run the tests, run `selenium.sh download` to
-get it and `selenium.sh start` to run it.
-
-Test with `gotest -v`.
-
-I (Miki) work on `dev` branch since `goinstall` pull from default.
 
 Authors
 =======
 
-* Miki Tebeka <miki.tebeka@gmail.com>
+* Miki Tebeka <miki.tebeka@gmail.com> (original author)
+* Quinn Slack <sqs@sourcegraph.com>
 
 
 License
 =======
-Copyright (C) 2010 Miki Tebeka <miki.tebeka@gmail.com>
 
-Distributed under the Eclipse Public License, the same as Clojure.
+Distributed under the Eclipse Public License.
