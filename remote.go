@@ -304,8 +304,7 @@ func (wd *remoteWD) NewSession() (sessionId string, err error) {
 }
 
 func (wd *remoteWD) Capabilities() (Capabilities, error) {
-	url := wd.url("/session/%s", wd.id)
-	res, err := wd.execute("GET", url, nil)
+	res, err := wd.execute("GET", wd.url("/session/%s", wd.id), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -375,8 +374,7 @@ func (wd *remoteWD) ActivateEngine(engine string) error {
 }
 
 func (wd *remoteWD) Quit() error {
-	url := wd.url("/session/%s", wd.id)
-	_, err := wd.execute("DELETE", url, nil)
+	_, err := wd.execute("DELETE", wd.url("/session/%s", wd.id), nil)
 	if err == nil {
 		wd.id = ""
 	}
@@ -393,8 +391,7 @@ func (wd *remoteWD) WindowHandles() ([]string, error) {
 }
 
 func (wd *remoteWD) CurrentURL() (string, error) {
-	url := wd.url("/session/%s/url", wd.id)
-	res, err := wd.execute("GET", url, nil)
+	res, err := wd.execute("GET", wd.url("/session/%s/url", wd.id), nil)
 	if err != nil {
 		return "", err
 	}
@@ -502,8 +499,7 @@ func (wd *remoteWD) FindElements(by, value string) ([]WebElement, error) {
 }
 
 func (wd *remoteWD) Close() error {
-	url := wd.url("/session/%s/window", wd.id)
-	_, err := wd.execute("DELETE", url, nil)
+	_, err := wd.execute("DELETE", wd.url("/session/%s/window", wd.id), nil)
 	return err
 }
 
@@ -519,7 +515,7 @@ func (wd *remoteWD) SwitchWindow(name string) error {
 }
 
 func (wd *remoteWD) CloseWindow(name string) error {
-	_, err := wd.execute("DELETE", "/session/%s/window", nil)
+	_, err := wd.execute("DELETE", wd.url("/session/%s/window", wd.id), nil)
 	return err
 }
 
@@ -545,8 +541,7 @@ func (wd *remoteWD) ActiveElement() (WebElement, error) {
 }
 
 func (wd *remoteWD) GetCookies() ([]Cookie, error) {
-	url := wd.url("/session/%s/cookie", wd.id)
-	data, err := wd.execute("GET", url, nil)
+	data, err := wd.execute("GET", wd.url("/session/%s/cookie", wd.id), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -573,14 +568,12 @@ func (wd *remoteWD) AddCookie(cookie *Cookie) error {
 }
 
 func (wd *remoteWD) DeleteAllCookies() error {
-	url := wd.url("/session/%s/cookie", wd.id)
-	_, err := wd.execute("DELETE", url, nil)
+	_, err := wd.execute("DELETE", wd.url("/session/%s/cookie", wd.id), nil)
 	return err
 }
 
 func (wd *remoteWD) DeleteCookie(name string) error {
-	url := wd.url("/session/%s/cookie/%s", wd.id, name)
-	_, err := wd.execute("DELETE", url, nil)
+	_, err := wd.execute("DELETE", wd.url("/session/%s/cookie/%s", wd.id, name), nil)
 	return err
 }
 
@@ -756,8 +749,7 @@ func (elem *remoteWE) MoveTo(xOffset, yOffset int) error {
 }
 
 func (elem *remoteWE) FindElement(by, value string) (WebElement, error) {
-	url := fmt.Sprintf("/session/%%s/element/%s/element", elem.id)
-	res, err := elem.parent.find(by, value, "", url)
+	res, err := elem.parent.find(by, value, "", fmt.Sprintf("/session/%%s/element/%s/element", elem.id))
 	if err != nil {
 		return nil, err
 	}
@@ -766,8 +758,7 @@ func (elem *remoteWE) FindElement(by, value string) (WebElement, error) {
 }
 
 func (elem *remoteWE) FindElements(by, value string) ([]WebElement, error) {
-	url := fmt.Sprintf("/session/%%s/element/%s/element", elem.id)
-	res, err := elem.parent.find(by, value, "s", url)
+	res, err := elem.parent.find(by, value, "s", fmt.Sprintf("/session/%%s/element/%s/element", elem.id))
 	if err != nil {
 		return nil, err
 	}
@@ -827,8 +818,7 @@ func (elem *remoteWE) LocationInView() (*Point, error) {
 
 func (elem *remoteWE) Size() (*Size, error) {
 	wd := elem.parent
-	url := wd.url("/session/%s/element/%s/size", wd.id, elem.id)
-	res, err := wd.execute("GET", url, nil)
+	res, err := wd.execute("GET", wd.url("/session/%s/element/%s/size", wd.id, elem.id), nil)
 	if err != nil {
 		return nil, err
 	}
