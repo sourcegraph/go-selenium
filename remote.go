@@ -224,20 +224,12 @@ func NewRemote(capabilities Capabilities, executor string) (WebDriver, error) {
 	return wd, nil
 }
 
-func (wd *remoteWD) stringCommand(urlTemplate string) (string, error) {
-	url := wd.url(urlTemplate, wd.id)
-	res, err := wd.execute("GET", url, nil)
-	if err != nil {
-		return "", err
+func (wd *remoteWD) stringCommand(urlTemplate string) (s string, err error) {
+	var r *reply
+	if r, err = wd.send("GET", wd.url(urlTemplate, wd.id), nil); err == nil {
+		err = r.readValue(&s)
 	}
-
-	reply := new(stringReply)
-	err = json.Unmarshal(res, reply)
-	if err != nil {
-		return "", err
-	}
-
-	return *reply.Value, nil
+	return
 }
 
 func (wd *remoteWD) voidCommand(urlTemplate string, data []byte) error {
