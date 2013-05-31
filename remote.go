@@ -12,6 +12,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"strings"
 )
@@ -145,14 +146,13 @@ func (wd *remoteWD) execute(method, url string, data []byte) ([]byte, error) {
 		return nil
 	}
 
-	debugLog("-> %s %s\n%s", method, url, data)
+	log.Printf("-> %s %s\n%s", method, url, data)
 	request, err := newRequest(method, url, data)
 	if err != nil {
 		return nil, err
 	}
 
 	response, err := http.DefaultClient.Do(request)
-	println("REQUEST 1", url, method, response.Status)
 	if err != nil {
 		return nil, err
 	}
@@ -160,7 +160,6 @@ func (wd *remoteWD) execute(method, url string, data []byte) ([]byte, error) {
 	// http.Client don't follow POST redirects ....
 	if (method == "POST") && isRedirect(response) {
 		url := response.Header["Location"][0]
-		println("REQUEST 2", url)
 		request, _ = newRequest("GET", url, nil)
 		response, err = http.DefaultClient.Do(request)
 		if err != nil {
@@ -169,7 +168,7 @@ func (wd *remoteWD) execute(method, url string, data []byte) ([]byte, error) {
 	}
 
 	buf, err := ioutil.ReadAll(response.Body)
-	debugLog("<- %s [%s]\n%s",
+	log.Printf("<- %s [%s]\n%s",
 		response.Status, response.Header["Content-Type"], buf)
 	if err != nil {
 		buf = []byte(response.Status)
