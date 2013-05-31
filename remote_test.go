@@ -11,6 +11,10 @@ import (
 	"testing"
 )
 
+func init() {
+	Trace = true
+}
+
 var caps = Capabilities{
 	"browserName": "firefox",
 }

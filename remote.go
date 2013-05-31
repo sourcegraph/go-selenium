@@ -14,11 +14,13 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/http/httputil"
 	"os"
 	"strings"
 )
 
 var Log = log.New(os.Stderr, "[selenium] ", log.Ltime|log.Lmicroseconds)
+var Trace bool
 
 /* Errors returned by Selenium server. */
 var errorCodes = map[int]string{
@@ -126,27 +128,35 @@ var httpClient = http.Client{
 }
 
 func (wd *remoteWD) execute(method, url string, data []byte) ([]byte, error) {
-	Log.Printf("-> %s %s: %s", method, url, data)
+	Log.Printf("-> %s %s [%d bytes]", method, url, len(data))
 	req, err := http.NewRequest(method, url, bytes.NewBuffer(data))
 	if err != nil {
 		return nil, err
 	}
 	req.Header.Add("Accept", jsonMIMEType)
 
+	if Trace {
+		if dump, err := httputil.DumpRequest(req, true); err == nil {
+			Log.Printf("-> TRACE\n%s", dump)
+		}
+	}
+
 	res, err := httpClient.Do(req)
 	if err != nil {
 		return nil, err
 	}
 
-	buf, err := ioutil.ReadAll(res.Body)
-	Log.Printf("<- %s [%s]: %s", res.Status, res.Header["Content-Type"], buf)
-	if err != nil {
-		buf = []byte(res.Status)
+	if Trace {
+		if dump, err := httputil.DumpResponse(res, true); err == nil {
+			Log.Printf("<- TRACE\n%s", dump)
+		}
 	}
 
+	buf, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		return nil, errors.New(string(buf))
+		return nil, err
 	}
+	Log.Printf("<- %s (%s) [%d bytes]", res.Status, res.Header["Content-Type"], len(buf))
 
 	cleanNils(buf)
 	if res.StatusCode >= 400 {
