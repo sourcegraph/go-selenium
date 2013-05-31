@@ -14,8 +14,11 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 	"strings"
 )
+
+var Log = log.New(os.Stderr, "[selenium] ", log.Ltime|log.Lmicroseconds)
 
 /* Errors returned by Selenium server. */
 var errorCodes = map[int]string{
@@ -123,7 +126,7 @@ var httpClient = http.Client{
 }
 
 func (wd *remoteWD) execute(method, url string, data []byte) ([]byte, error) {
-	log.Printf("-> %s %s\n%s", method, url, data)
+	Log.Printf("-> %s %s: %s", method, url, data)
 	req, err := http.NewRequest(method, url, bytes.NewBuffer(data))
 	if err != nil {
 		return nil, err
@@ -136,8 +139,7 @@ func (wd *remoteWD) execute(method, url string, data []byte) ([]byte, error) {
 	}
 
 	buf, err := ioutil.ReadAll(res.Body)
-	log.Printf("<- %s [%s]\n%s",
-		res.Status, res.Header["Content-Type"], buf)
+	Log.Printf("<- %s [%s]: %s", res.Status, res.Header["Content-Type"], buf)
 	if err != nil {
 		buf = []byte(res.Status)
 	}
