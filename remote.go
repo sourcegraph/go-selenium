@@ -72,15 +72,6 @@ func (r *reply) readValue(v interface{}) error {
 }
 
 /* Various reply types, we use them to json.Unmarshal replies */
-type stringReply struct {
-	Value *string
-}
-type stringsReply struct {
-	Value []string
-}
-type boolReply struct {
-	Value bool
-}
 type element struct {
 	ELEMENT string
 }
@@ -238,35 +229,20 @@ func (wd *remoteWD) voidCommand(urlTemplate string, data []byte) (err error) {
 
 }
 
-func (wd remoteWD) stringsCommand(urlTemplate string) ([]string, error) {
-	url := wd.url(urlTemplate, wd.id)
-	res, err := wd.execute("GET", url, nil)
-	if err != nil {
-		return nil, err
+func (wd remoteWD) stringsCommand(urlTemplate string) (s []string, err error) {
+	var r *reply
+	if r, err = wd.send("GET", wd.url(urlTemplate, wd.id), nil); err == nil {
+		err = r.readValue(&s)
 	}
-	reply := new(stringsReply)
-	err = json.Unmarshal(res, reply)
-	if err != nil {
-		return nil, err
-	}
-
-	return reply.Value, nil
+	return
 }
 
-func (wd *remoteWD) boolCommand(urlTemplate string) (bool, error) {
-	url := wd.url(urlTemplate, wd.id)
-	res, err := wd.execute("GET", url, nil)
-	if err != nil {
-		return false, err
+func (wd *remoteWD) boolCommand(urlTemplate string) (v bool, err error) {
+	var r *reply
+	if r, err = wd.send("GET", wd.url(urlTemplate, wd.id), nil); err == nil {
+		err = r.readValue(&v)
 	}
-
-	reply := new(boolReply)
-	err = json.Unmarshal(res, reply)
-	if err != nil {
-		return false, err
-	}
-
-	return reply.Value, nil
+	return
 }
 
 // WebDriver interface implementation
