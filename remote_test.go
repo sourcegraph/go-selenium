@@ -12,7 +12,8 @@ import (
 )
 
 func init() {
-	Trace = true
+	flag.BoolVar(&Trace, "trace", false, "trace HTTP requests and responses")
+	flag.Parse()
 }
 
 var caps = Capabilities{
