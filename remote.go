@@ -232,10 +232,9 @@ func (wd *remoteWD) stringCommand(urlTemplate string) (s string, err error) {
 	return
 }
 
-func (wd *remoteWD) voidCommand(urlTemplate string, data []byte) error {
-	url := wd.url(urlTemplate, wd.id)
-	_, err := wd.execute("POST", url, data)
-	return err
+func (wd *remoteWD) voidCommand(urlTemplate string, data []byte) (err error) {
+	_, err = wd.send("POST", wd.url(urlTemplate, wd.id), data)
+	return
 
 }
 
