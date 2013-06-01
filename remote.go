@@ -17,6 +17,7 @@ import (
 	"net/http/httputil"
 	"os"
 	"strings"
+	"testing"
 )
 
 var Log = log.New(os.Stderr, "[selenium] ", log.Ltime|log.Lmicroseconds)
@@ -526,6 +527,10 @@ func (wd *remoteWebDriver) Screenshot() ([]byte, error) {
 	return ioutil.ReadAll(decoder)
 }
 
+func (wd *remoteWebDriver) T(t *testing.T) WebDriverT {
+	return &webDriverT{wd, t}
+}
+
 // WebElement interface implementation
 
 type remoteWE struct {
@@ -651,4 +656,8 @@ func (elem *remoteWE) CSSProperty(name string) (string, error) {
 	wd := elem.parent
 	urlTemplate := fmt.Sprintf("/session/%s/element/%s/css/%s", wd.id, elem.id, name)
 	return elem.parent.stringCommand(urlTemplate)
+}
+
+func (elem *remoteWE) T(t *testing.T) WebElementT {
+	return &webElementT{elem, t}
 }

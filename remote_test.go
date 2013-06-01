@@ -88,36 +88,26 @@ func TestCapabilities(t *testing.T) {
 
 func TestSetAsyncScriptTimeout(t *testing.T) {
 	t.Parallel()
-	wd := newRemote("TestSetAsyncScriptTimeout", t)
+	wd := newRemote("TestSetAsyncScriptTimeout", t).T(t)
 	defer wd.Quit()
 
-	err := wd.SetAsyncScriptTimeout(200)
-	if err != nil {
-		t.Fatal(err)
-	}
+	wd.SetAsyncScriptTimeout(200)
 }
 
 func TestSetImplicitWaitTimeout(t *testing.T) {
 	t.Parallel()
-	wd := newRemote("TestSetImplicitWaitTimeout", t)
+	wd := newRemote("TestSetImplicitWaitTimeout", t).T(t)
 	defer wd.Quit()
 
-	err := wd.SetImplicitWaitTimeout(200)
-	if err != nil {
-		t.Fatal(err)
-	}
+	wd.SetImplicitWaitTimeout(200)
 }
 
 func TestCurrentWindowHandle(t *testing.T) {
 	t.Parallel()
-	wd := newRemote("TestCurrentWindowHandle", t)
+	wd := newRemote("TestCurrentWindowHandle", t).T(t)
 	defer wd.Quit()
 
-	handle, err := wd.CurrentWindowHandle()
-
-	if err != nil {
-		t.Fatal(err)
-	}
+	handle := wd.CurrentWindowHandle()
 
 	if handle == "" {
 		t.Fatal("Empty handle")
@@ -126,13 +116,10 @@ func TestCurrentWindowHandle(t *testing.T) {
 
 func TestWindowHandles(t *testing.T) {
 	t.Parallel()
-	wd := newRemote("TestWindowHandles", t)
+	wd := newRemote("TestWindowHandles", t).T(t)
 	defer wd.Quit()
 
-	handles, err := wd.CurrentWindowHandle()
-	if err != nil {
-		t.Fatal(err)
-	}
+	handles := wd.CurrentWindowHandle()
 
 	if handles == "" {
 		t.Fatal("No handles")
@@ -141,18 +128,12 @@ func TestWindowHandles(t *testing.T) {
 
 func TestGet(t *testing.T) {
 	t.Parallel()
-	wd := newRemote("TestGet", t)
+	wd := newRemote("TestGet", t).T(t)
 	defer wd.Quit()
 
-	err := wd.Get(serverURL)
-	if err != nil {
-		t.Fatal(err)
-	}
+	wd.Get(serverURL)
 
-	newURL, err := wd.CurrentURL()
-	if err != nil {
-		t.Fatal(err)
-	}
+	newURL := wd.CurrentURL()
 
 	if newURL != serverURL {
 		t.Fatalf("%s != %s", newURL, serverURL)
@@ -161,43 +142,28 @@ func TestGet(t *testing.T) {
 
 func TestNavigation(t *testing.T) {
 	t.Parallel()
-	wd := newRemote("TestNavigation", t)
+	wd := newRemote("TestNavigation", t).T(t)
 	defer wd.Quit()
 
 	url1 := serverURL
-	err := wd.Get(url1)
-	if err != nil {
-		t.Fatal(err)
-	}
+	wd.Get(url1)
 
 	url2 := serverURL + "other"
-	err = wd.Get(url2)
-	if err != nil {
-		t.Fatal(err)
-	}
+	wd.Get(url2)
 
-	err = wd.Back()
-	if err != nil {
-		t.Fatal(err)
-	}
-	url, _ := wd.CurrentURL()
+	wd.Back()
+	url := wd.CurrentURL()
 	if url != url1 {
 		t.Fatalf("back got me to %s (expected %s)", url, url1)
 	}
-	err = wd.Forward()
-	if err != nil {
-		t.Fatal(err)
-	}
-	url, _ = wd.CurrentURL()
+	wd.Forward()
+	url = wd.CurrentURL()
 	if url != url2 {
 		t.Fatalf("forward got me to %s (expected %s)", url, url2)
 	}
 
-	err = wd.Refresh()
-	if err != nil {
-		t.Fatal(err)
-	}
-	url, _ = wd.CurrentURL()
+	wd.Refresh()
+	url = wd.CurrentURL()
 	if url != url2 {
 		t.Fatalf("refresh got me to %s (expected %s)", url, url2)
 	}
@@ -205,16 +171,11 @@ func TestNavigation(t *testing.T) {
 
 func TestTitle(t *testing.T) {
 	t.Parallel()
-	wd := newRemote("TestTitle", t)
+	wd := newRemote("TestTitle", t).T(t)
 	defer wd.Quit()
 
 	wd.Get(serverURL)
-
-	title, err := wd.Title()
-	if err != nil {
-		t.Fatal(err)
-	}
-
+	title := wd.Title()
 	expectedTitle := "Go Selenium Test Suite"
 	if title != expectedTitle {
 		t.Fatal("Bad title %s, should be %s", title, expectedTitle)
@@ -223,19 +184,11 @@ func TestTitle(t *testing.T) {
 
 func TestPageSource(t *testing.T) {
 	t.Parallel()
-	wd := newRemote("TestPageSource", t)
+	wd := newRemote("TestPageSource", t).T(t)
 	defer wd.Quit()
 
-	err := wd.Get(serverURL)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	source, err := wd.PageSource()
-	if err != nil {
-		t.Fatal(err)
-	}
-
+	wd.Get(serverURL)
+	source := wd.PageSource()
 	if !strings.Contains(source, "The home page.") {
 		t.Fatalf("Bad source\n%s", source)
 	}
@@ -243,45 +196,36 @@ func TestPageSource(t *testing.T) {
 
 func TestFindElement(t *testing.T) {
 	t.Parallel()
-	wd := newRemote("TestFindElement", t)
+	wd := newRemote("TestFindElement", t).T(t)
 	defer wd.Quit()
 
 	wd.Get(serverURL)
-	elem, err := wd.FindElement(ByName, "q")
-	if err != nil {
-		t.Fatal(err)
-	}
+	elem := wd.FindElement(ByName, "q")
 
-	we, ok := elem.(*remoteWE)
+	we, ok := elem.(*webElementT).e.(*remoteWE)
 	if !ok {
 		t.Fatal("Can't convert to *remoteWE")
 	}
-
 	if we.id == "" {
 		t.Fatal("Empty element")
 	}
-
-	if we.parent != wd {
+	if we.parent != wd.(*webDriverT).d.(*remoteWebDriver) {
 		t.Fatal("Bad parent")
 	}
 }
 
 func TestFindElements(t *testing.T) {
 	t.Parallel()
-	wd := newRemote("TestFindElements", t)
+	wd := newRemote("TestFindElements", t).T(t)
 	defer wd.Quit()
 
 	wd.Get(serverURL)
-	elems, err := wd.FindElements(ByName, "q")
-	if err != nil {
-		t.Fatal(err)
-	}
-
+	elems := wd.FindElements(ByName, "q")
 	if len(elems) != 1 {
 		t.Fatal("Wrong number of elements %d (should be 1)", len(elems))
 	}
 
-	we, ok := elems[0].(*remoteWE)
+	we, ok := elems[0].(*webElementT).e.(*remoteWE)
 	if !ok {
 		t.Fatal("Can't convert to *remoteWE")
 	}
@@ -289,86 +233,53 @@ func TestFindElements(t *testing.T) {
 	if we.id == "" {
 		t.Fatal("Empty element")
 	}
-
-	if we.parent != wd {
+	if we.parent != wd.(*webDriverT).d.(*remoteWebDriver) {
 		t.Fatal("Bad parent")
 	}
 }
 
 func TestSendKeys(t *testing.T) {
 	t.Parallel()
-	wd := newRemote("TestSendKeys", t)
+	wd := newRemote("TestSendKeys", t).T(t)
 	defer wd.Quit()
 
 	wd.Get(serverURL)
-	input, err := wd.FindElement(ByName, "q")
-	if err != nil {
-		t.Fatal(err)
-	}
-	err = input.SendKeys("golang\n")
-	if err != nil {
-		t.Fatal(err)
-	}
+	input := wd.FindElement(ByName, "q")
+	input.SendKeys("golang\n")
 
-	source, err := wd.PageSource()
-	if err != nil {
-		t.Fatal(err)
-	}
-
+	source := wd.PageSource()
 	if !strings.Contains(source, "The Go Programming Language") {
 		t.Fatal("Can't find Go")
 	}
-
 	if !strings.Contains(source, "golang") {
 		t.Fatal("Can't find search query in source")
 	}
-
 }
 
 func TestClick(t *testing.T) {
 	t.Parallel()
-	wd := newRemote("TestClick", t)
+	wd := newRemote("TestClick", t).T(t)
 	defer wd.Quit()
 
 	wd.Get(serverURL)
-	input, err := wd.FindElement(ByName, "q")
-	if err != nil {
-		t.Fatal(err)
-	}
-	err = input.SendKeys("golang")
-	if err != nil {
-		t.Fatal(err)
-	}
+	input := wd.FindElement(ByName, "q")
+	input.SendKeys("golang")
 
-	button, err := wd.FindElement(ById, "submit")
-	if err != nil {
-		t.Fatal(err)
-	}
-	err = button.Click()
-	if err != nil {
-		t.Fatal(err)
-	}
+	button := wd.FindElement(ById, "submit")
+	button.Click()
 
-	source, err := wd.PageSource()
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if !strings.Contains(source, "The Go Programming Language") {
+	if !strings.Contains(wd.PageSource(), "The Go Programming Language") {
 		t.Fatal("Can't find Go")
 	}
 }
 
 func TestGetCookies(t *testing.T) {
 	t.Parallel()
-	wd := newRemote("TestGetCookies", t)
+	wd := newRemote("TestGetCookies", t).T(t)
 	defer wd.Quit()
 
 	wd.Get(serverURL)
-	cookies, err := wd.GetCookies()
-	if err != nil {
-		t.Fatal(err)
-	}
+	cookies := wd.GetCookies()
 
 	if len(cookies) == 0 {
 		t.Fatal("No cookies")
@@ -381,20 +292,14 @@ func TestGetCookies(t *testing.T) {
 
 func TestAddCookie(t *testing.T) {
 	t.Parallel()
-	wd := newRemote("TestAddCookie", t)
+	wd := newRemote("TestAddCookie", t).T(t)
 	defer wd.Quit()
 
 	wd.Get(serverURL)
 	cookie := &Cookie{Name: "the nameless cookie", Value: "I have nothing"}
-	err := wd.AddCookie(cookie)
-	if err != nil {
-		t.Fatal(err)
-	}
+	wd.AddCookie(cookie)
 
-	cookies, err := wd.GetCookies()
-	if err != nil {
-		t.Fatal(err)
-	}
+	cookies := wd.GetCookies()
 	for _, c := range cookies {
 		if (c.Name == cookie.Name) && (c.Value == cookie.Value) {
 			return
@@ -406,25 +311,16 @@ func TestAddCookie(t *testing.T) {
 
 func TestDeleteCookie(t *testing.T) {
 	t.Parallel()
-	wd := newRemote("TestDeleteCookie", t)
+	wd := newRemote("TestDeleteCookie", t).T(t)
 	defer wd.Quit()
 
 	wd.Get(serverURL)
-	cookies, err := wd.GetCookies()
-	if err != nil {
-		t.Fatal(err)
-	}
+	cookies := wd.GetCookies()
 	if len(cookies) == 0 {
 		t.Fatal("No cookies")
 	}
-	err = wd.DeleteCookie(cookies[0].Name)
-	if err != nil {
-		t.Fatal(err)
-	}
-	newCookies, err := wd.GetCookies()
-	if err != nil {
-		t.Fatal(err)
-	}
+	wd.DeleteCookie(cookies[0].Name)
+	newCookies := wd.GetCookies()
 	if len(newCookies) != len(cookies)-1 {
 		t.Fatal("Cookie not deleted")
 	}
@@ -437,19 +333,13 @@ func TestDeleteCookie(t *testing.T) {
 }
 
 func TestLocation(t *testing.T) {
-	wd := newRemote("TestLocation", t)
+	wd := newRemote("TestLocation", t).T(t)
 	defer wd.Quit()
 
 	wd.Get(serverURL)
-	button, err := wd.FindElement(ById, "submit")
-	if err != nil {
-		t.Fatal(err)
-	}
+	button := wd.FindElement(ById, "submit")
 
-	loc, err := button.Location()
-	if err != nil {
-		t.Fatal(err)
-	}
+	loc := button.Location()
 
 	if (loc.X == 0) || (loc.Y == 0) {
 		t.Fatalf("Bad location: %v\n", loc)
@@ -458,19 +348,13 @@ func TestLocation(t *testing.T) {
 
 func TestLocationInView(t *testing.T) {
 	t.Parallel()
-	wd := newRemote("TestLocationInView", t)
+	wd := newRemote("TestLocationInView", t).T(t)
 	defer wd.Quit()
 
 	wd.Get(serverURL)
-	button, err := wd.FindElement(ById, "submit")
-	if err != nil {
-		t.Fatal(err)
-	}
+	button := wd.FindElement(ById, "submit")
 
-	loc, err := button.LocationInView()
-	if err != nil {
-		t.Fatal(err)
-	}
+	loc := button.LocationInView()
 
 	if (loc.X == 0) || (loc.Y == 0) {
 		t.Fatalf("Bad location: %v\n", loc)
@@ -479,19 +363,13 @@ func TestLocationInView(t *testing.T) {
 
 func TestSize(t *testing.T) {
 	t.Parallel()
-	wd := newRemote("TestSize", t)
+	wd := newRemote("TestSize", t).T(t)
 	defer wd.Quit()
 
 	wd.Get(serverURL)
-	button, err := wd.FindElement(ById, "submit")
-	if err != nil {
-		t.Fatal(err)
-	}
+	button := wd.FindElement(ById, "submit")
 
-	size, err := button.Size()
-	if err != nil {
-		t.Fatal(err)
-	}
+	size := button.Size()
 
 	if (size.Width == 0) || (size.Height == 0) {
 		t.Fatalf("Bad size: %v\n", size)
@@ -500,15 +378,12 @@ func TestSize(t *testing.T) {
 
 func TestExecuteScript(t *testing.T) {
 	t.Parallel()
-	wd := newRemote("TestExecuteScript", t)
+	wd := newRemote("TestExecuteScript", t).T(t)
 	defer wd.Quit()
 
 	script := "return arguments[0] + arguments[1]"
 	args := []interface{}{1, 2}
-	reply, err := wd.ExecuteScript(script, args)
-	if err != nil {
-		t.Fatal(err)
-	}
+	reply := wd.ExecuteScript(script, args)
 
 	result, ok := reply.(float64)
 	if !ok {
@@ -522,14 +397,11 @@ func TestExecuteScript(t *testing.T) {
 
 func TestScreenshot(t *testing.T) {
 	t.Parallel()
-	wd := newRemote("TestScreenshot", t)
+	wd := newRemote("TestScreenshot", t).T(t)
 	defer wd.Quit()
 
 	wd.Get(serverURL)
-	data, err := wd.Screenshot()
-	if err != nil {
-		t.Fatal(err)
-	}
+	data := wd.Screenshot()
 
 	if len(data) == 0 {
 		t.Fatal("Empty reply")
@@ -538,33 +410,19 @@ func TestScreenshot(t *testing.T) {
 
 func TestIsSelected(t *testing.T) {
 	t.Parallel()
-	wd := newRemote("TestIsSelected", t)
+	wd := newRemote("TestIsSelected", t).T(t)
 	defer wd.Quit()
 
 	wd.Get(serverURL)
-	elem, err := wd.FindElement(ById, "chuk")
-	if err != nil {
-		t.Fatal("Can't find element")
-	}
-	selected, err := elem.IsSelected()
-	if err != nil {
-		t.Fatal("Can't get selection")
-	}
+	elem := wd.FindElement(ById, "chuk")
 
+	selected := elem.IsSelected()
 	if selected {
 		t.Fatal("Already selected")
 	}
 
-	err = elem.Click()
-	if err != nil {
-		t.Fatal("Can't click")
-	}
-
-	selected, err = elem.IsSelected()
-	if err != nil {
-		t.Fatal("Can't get selection")
-	}
-
+	elem.Click()
+	selected = elem.IsSelected()
 	if !selected {
 		t.Fatal("Not selected")
 	}
