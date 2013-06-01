@@ -58,14 +58,12 @@ type remoteWD struct {
 	// profile             BrowserProfile
 }
 
-/* Server reply */
-type serverReply struct {
+// Server reply to WebDriver command.
+type reply struct {
 	SessionId string
 	Status    int
 	Value     json.RawMessage
 }
-
-type reply serverReply // TODO(sqs): redundant
 
 func (r *reply) readValue(v interface{}) error {
 	return json.Unmarshal(r.Value, v)
@@ -130,7 +128,7 @@ func (wd *remoteWD) execute(method, url string, data []byte) ([]byte, error) {
 	Log.Printf("<- %s (%s) [%d bytes]", res.Status, res.Header["Content-Type"], len(buf))
 
 	if res.StatusCode >= 400 {
-		reply := new(serverReply)
+		reply := new(reply)
 		err := json.Unmarshal(buf, reply)
 		if err != nil {
 			return nil, errors.New(fmt.Sprintf("Bad server reply status: %s", res.Status))
@@ -147,7 +145,7 @@ func (wd *remoteWD) execute(method, url string, data []byte) ([]byte, error) {
 	* not happy about that.
 	 */
 	if strings.HasPrefix(res.Header.Get("Content-Type"), jsonMIMEType) {
-		reply := new(serverReply)
+		reply := new(reply)
 		err := json.Unmarshal(buf, reply)
 		if err != nil {
 			return nil, err
