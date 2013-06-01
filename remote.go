@@ -72,9 +72,6 @@ func (r *reply) readValue(v interface{}) error {
 }
 
 /* Various reply types, we use them to json.Unmarshal replies */
-type locationReply struct {
-	Value Point
-}
 type sizeReply struct {
 	Value Size
 }
@@ -636,21 +633,15 @@ func (elem *remoteWE) GetAttribute(name string) (string, error) {
 	return elem.parent.stringCommand(urlTemplate)
 }
 
-func (elem *remoteWE) location(suffix string) (*Point, error) {
+func (elem *remoteWE) location(suffix string) (pt *Point, err error) {
 	wd := elem.parent
 	path := "/session/%s/element/%s/location" + suffix
 	url := wd.url(path, wd.id, elem.id)
-	res, err := wd.execute("GET", url, nil)
-	if err != nil {
-		return nil, err
+	var r *reply
+	if r, err = wd.send("GET", url, nil); err == nil {
+		err = r.readValue(&pt)
 	}
-	reply := new(locationReply)
-	err = json.Unmarshal(res, reply)
-	if err != nil {
-		return nil, err
-	}
-
-	return &reply.Value, nil
+	return
 }
 
 func (elem *remoteWE) Location() (*Point, error) {
