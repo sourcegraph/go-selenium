@@ -1,69 +1,33 @@
 package selenium
 
 import (
-	"encoding/json"
-	"errors"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"strings"
 	"testing"
 )
 
 var grid = flag.Bool("test.grid", false, "skip tests that fail on Selenium Grid")
+var executor = flag.String("test.executor", defaultExecutor, "executor URL")
+var browserName = flag.String("test.browserName", "firefox", "browser to run tests on")
 
 func init() {
 	flag.BoolVar(&Trace, "trace", false, "trace HTTP requests and responses")
 	flag.Parse()
+
+	caps["browserName"] = *browserName
 }
 
-var caps = Capabilities{
-	"browserName": "firefox",
-}
-
-type sauceCfg struct {
-	User string
-	Key  string
-}
-
-var serverPort = ":4793"
-var serverURL = "http://localhost" + serverPort + "/"
+var caps Capabilities = make(Capabilities)
 
 var runOnSauce *bool = flag.Bool("saucelabs", false, "run on sauce")
 
-func readSauce() (*sauceCfg, error) {
-	data, err := ioutil.ReadFile("sauce.json")
-	if err != nil {
-		message := fmt.Sprintf("can't open sauce.json - %s\n", err)
-		return nil, errors.New(message)
+func newRemote(testName string, t *testing.T) (wd WebDriver) {
+	var err error
+	if wd, err = NewRemote(caps, *executor); err != nil {
+		t.Fatalf("can't start session for test %s: %s", testName, err)
 	}
-	cfg := &sauceCfg{}
-	if err = json.Unmarshal(data, cfg); err != nil {
-		return nil, fmt.Errorf("bad JSON- %s", err)
-	}
-
-	return cfg, nil
-}
-
-func newRemote(testName string, t *testing.T) WebDriver {
-	executor := ""
-	// FIXME: Since we use internal http server, we can use SauceLabs ...
-	//if *runOnSauce {
-	if false {
-		cfg, err := readSauce()
-		if err != nil {
-			t.Fatalf("can't read sauce config - %s", err)
-		}
-		caps["name"] = testName // SauceLabs
-		urlTemplate := "http://%s:%s@ondemand.saucelabs.com:80/wd/hub"
-		executor = fmt.Sprintf(urlTemplate, cfg.User, cfg.Key)
-	}
-	wd, err := NewRemote(caps, executor)
-	if err != nil {
-		t.Fatalf("can't start session - %s", err)
-	}
-
 	return wd
 }
 
@@ -90,7 +54,7 @@ func TestNewSession(t *testing.T) {
 	if *runOnSauce {
 		return
 	}
-	wd := &remoteWebDriver{capabilities: caps, executor: DEFAULT_EXECUTOR}
+	wd := &remoteWebDriver{capabilities: caps, executor: defaultExecutor}
 	sid, err := wd.NewSession()
 	defer wd.Quit()
 
@@ -674,6 +638,9 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	}
 	fmt.Fprintf(w, page)
 }
+
+var serverPort = ":4793"
+var serverURL = "http://localhost" + serverPort + "/"
 
 func init() {
 	go func() {

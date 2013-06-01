@@ -46,9 +46,9 @@ var errorCodes = map[int]string{
 }
 
 const (
-	SUCCESS          = 0
-	DEFAULT_EXECUTOR = "http://127.0.0.1:4444/wd/hub"
-	jsonMIMEType     = "application/json"
+	SUCCESS         = 0
+	defaultExecutor = "http://127.0.0.1:4444/wd/hub"
+	jsonMIMEType    = "application/json"
 )
 
 type remoteWebDriver struct {
@@ -178,7 +178,7 @@ func (r *reply) readValue(v interface{}) error {
 func NewRemote(capabilities Capabilities, executor string) (WebDriver, error) {
 
 	if executor == "" {
-		executor = DEFAULT_EXECUTOR
+		executor = defaultExecutor
 	}
 
 	wd := &remoteWebDriver{executor: executor, capabilities: capabilities}
