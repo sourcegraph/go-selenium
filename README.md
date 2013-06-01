@@ -68,7 +68,7 @@ func ExampleFindElement() {
 
 The `WebDriverT` and `WebElementT` interfaces make test code cleaner. Each method in
 `WebDriver` and `WebElement` has a corresponding method in the `*T` interfaces that omits the error
-from the return values and instead calls `t.Errorf` upon encountering an error. For example:
+from the return values and instead calls `t.Fatalf` upon encountering an error. For example:
 
 ```go
 package mytest
@@ -91,15 +91,15 @@ func TestWithT(t *testing.T) {
   // a WebElement).
   wdt := wd.T(t)
 
-  // Calls `t.Errorf("Get: %s", err)` upon failure.
+  // Calls `t.Fatalf("Get: %s", err)` upon failure.
   wdt.Get("http://example.com")
 
-  // Calls `t.Errorf("FindElement(by=%q, value=%q): %s", by, value, err)` upon failure.
+  // Calls `t.Fatalf("FindElement(by=%q, value=%q): %s", by, value, err)` upon failure.
   elem := wdt.FindElement(selenium.ByCSSSelector, ".foo")
 
-  // Calls `t.Errorf("Text: %s", err)` if the `.Text()` call fails.
+  // Calls `t.Fatalf("Text: %s", err)` if the `.Text()` call fails.
   if elem.Text() != "bar" {
-    t.Errorf("want elem text %q, got %q", "bar", elem.Text())
+    t.Fatalf("want elem text %q, got %q", "bar", elem.Text())
   }
 }
 ```

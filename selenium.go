@@ -235,7 +235,7 @@ type WebDriver interface {
 	/* Execute a script async. */
 	ExecuteScriptAsync(script string, args []interface{}) (interface{}, error)
 
-	// Get a WebDriverT of this element that has methods that call t.Errorf upon encountering
+	// Get a WebDriverT of this element that has methods that call t.Fatalf upon encountering
 	// errors instead of using multiple returns to indicate errors.
 	T(t *testing.T) WebDriverT
 }
@@ -284,7 +284,7 @@ type WebElement interface {
 	/* Get element CSS property value. */
 	CSSProperty(name string) (string, error)
 
-	// Get a WebElementT of this element that has methods that call t.Errorf upon encountering
+	// Get a WebElementT of this element that has methods that call t.Fatalf upon encountering
 	// errors instead of using multiple returns to indicate errors.
 	T(t *testing.T) WebElementT
 }
