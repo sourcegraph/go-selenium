@@ -71,11 +71,6 @@ func (r *reply) readValue(v interface{}) error {
 	return json.Unmarshal(r.Value, v)
 }
 
-/* Various reply types, we use them to json.Unmarshal replies */
-type anyReply struct {
-	Value interface{}
-}
-
 func (wd *remoteWD) url(template string, args ...interface{}) string {
 	path := fmt.Sprintf(template, args...)
 	return wd.executor + path
@@ -491,31 +486,21 @@ func (wd *remoteWD) SetAlertText(text string) error {
 	return wd.voidCommand("/session/%s/alert_text", params)
 }
 
-func (wd *remoteWD) execScript(script string, args []interface{}, suffix string) (interface{}, error) {
+func (wd *remoteWD) execScript(script string, args []interface{}, suffix string) (res interface{}, err error) {
 	params := map[string]interface{}{
 		"script": script,
 		"args":   args,
 	}
-
-	data, err := json.Marshal(params)
-	if err != nil {
+	var data []byte
+	if data, err = json.Marshal(params); err != nil {
 		return nil, err
 	}
-
-	template := "/session/%s/execute" + suffix
-	url := wd.url(template, wd.id)
-	res, err := wd.execute("POST", url, data)
-	if err != nil {
-		return nil, err
+	url := wd.url("/session/%s/execute"+suffix, wd.id)
+	var r *reply
+	if r, err = wd.send("POST", url, data); err == nil {
+		err = r.readValue(&res)
 	}
-
-	reply := new(anyReply)
-	err = json.Unmarshal(res, reply)
-	if err != nil {
-		return nil, err
-	}
-
-	return reply.Value, nil
+	return
 }
 
 func (wd *remoteWD) ExecuteScript(script string, args []interface{}) (interface{}, error) {
