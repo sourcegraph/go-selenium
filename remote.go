@@ -72,9 +72,6 @@ func (r *reply) readValue(v interface{}) error {
 }
 
 /* Various reply types, we use them to json.Unmarshal replies */
-type cookiesReply struct {
-	Value []Cookie
-}
 type locationReply struct {
 	Value Point
 }
@@ -429,19 +426,12 @@ func (wd *remoteWD) ActiveElement() (WebElement, error) {
 	}
 }
 
-func (wd *remoteWD) GetCookies() ([]Cookie, error) {
-	data, err := wd.execute("GET", wd.url("/session/%s/cookie", wd.id), nil)
-	if err != nil {
-		return nil, err
+func (wd *remoteWD) GetCookies() (c []Cookie, err error) {
+	var r *reply
+	if r, err = wd.send("GET", wd.url("/session/%s/cookie", wd.id), nil); err == nil {
+		err = r.readValue(&c)
 	}
-
-	reply := new(cookiesReply)
-	err = json.Unmarshal(data, reply)
-	if err != nil {
-		return nil, err
-	}
-
-	return reply.Value, nil
+	return
 }
 
 func (wd *remoteWD) AddCookie(cookie *Cookie) error {
