@@ -72,9 +72,6 @@ func (r *reply) readValue(v interface{}) error {
 }
 
 /* Various reply types, we use them to json.Unmarshal replies */
-type sizeReply struct {
-	Value Size
-}
 type anyReply struct {
 	Value interface{}
 }
@@ -652,19 +649,14 @@ func (elem *remoteWE) LocationInView() (*Point, error) {
 	return elem.location("_in_view")
 }
 
-func (elem *remoteWE) Size() (*Size, error) {
+func (elem *remoteWE) Size() (sz *Size, err error) {
 	wd := elem.parent
-	res, err := wd.execute("GET", wd.url("/session/%s/element/%s/size", wd.id, elem.id), nil)
-	if err != nil {
-		return nil, err
+	url := wd.url("/session/%s/element/%s/size", wd.id, elem.id)
+	var r *reply
+	if r, err = wd.send("GET", url, nil); err == nil {
+		err = r.readValue(&sz)
 	}
-	reply := new(sizeReply)
-	err = json.Unmarshal(res, reply)
-	if err != nil {
-		return nil, err
-	}
-
-	return &reply.Value, nil
+	return
 }
 
 func (elem *remoteWE) CSSProperty(name string) (string, error) {
