@@ -11,6 +11,8 @@ import (
 	"testing"
 )
 
+var grid = flag.Bool("test.grid", false, "skip tests that fail on Selenium Grid")
+
 func init() {
 	flag.BoolVar(&Trace, "trace", false, "trace HTTP requests and responses")
 	flag.Parse()
@@ -66,6 +68,9 @@ func newRemote(testName string, t *testing.T) WebDriver {
 }
 
 func TestStatus(t *testing.T) {
+	if *grid {
+		t.Skip()
+	}
 	t.Parallel()
 	wd := newRemote("TestStatus", t)
 	defer wd.Quit()
