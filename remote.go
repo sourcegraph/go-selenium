@@ -72,15 +72,6 @@ func (r *reply) readValue(v interface{}) error {
 }
 
 /* Various reply types, we use them to json.Unmarshal replies */
-type element struct {
-	ELEMENT string
-}
-type elementReply struct {
-	Value element
-}
-type elementsReply struct {
-	Value []element
-}
 type cookiesReply struct {
 	Value []Cookie
 }
@@ -356,7 +347,11 @@ func (wd *remoteWD) PageSource() (string, error) {
 	return wd.stringCommand("/session/%s/source")
 }
 
-func (wd *remoteWD) find(by, value, suffix, url string) (v []byte, err error) {
+type element struct {
+	Element string `json:"ELEMENT"`
+}
+
+func (wd *remoteWD) find(by, value, suffix, url string) (r *reply, err error) {
 	params := map[string]string{"using": by, "value": value}
 	var data []byte
 	if data, err = json.Marshal(params); err == nil {
@@ -365,48 +360,44 @@ func (wd *remoteWD) find(by, value, suffix, url string) (v []byte, err error) {
 		}
 		urlTemplate := url + suffix
 		url = wd.url(urlTemplate, wd.id)
-		v, err = wd.execute("POST", url, data)
+		r, err = wd.send("POST", url, data)
 	}
 	return
 }
 
-func decodeElement(wd *remoteWD, data []byte) (WebElement, error) {
-	reply := new(elementReply)
-	err := json.Unmarshal(data, reply)
-	if err != nil {
-		return nil, err
+func decodeElement(wd *remoteWD, r *reply) WebElement {
+	var elem element
+	if err := r.readValue(&elem); err != nil {
+		panic(err.Error() + ": " + string(r.Value))
 	}
-	elem := &remoteWE{wd, reply.Value.ELEMENT}
-	return elem, nil
+	return &remoteWE{parent: wd, id: elem.Element}
 }
 
 func (wd *remoteWD) FindElement(by, value string) (WebElement, error) {
-	res, err := wd.find(by, value, "", "")
-	if err != nil {
+	if res, err := wd.find(by, value, "", ""); err == nil {
+		return decodeElement(wd, res), nil
+	} else {
 		return nil, err
 	}
-	return decodeElement(wd, res)
 }
 
-func decodeElements(wd *remoteWD, data []byte) ([]WebElement, error) {
-	reply := new(elementsReply)
-	err := json.Unmarshal(data, reply)
-	if err != nil {
-		return nil, err
+func decodeElements(wd *remoteWD, r *reply) (welems []WebElement) {
+	var elems []element
+	if err := r.readValue(&elems); err != nil {
+		panic(err.Error() + ": " + string(r.Value))
 	}
-	elems := make([]WebElement, len(reply.Value))
-	for i, elem := range reply.Value {
-		elems[i] = &remoteWE{wd, elem.ELEMENT}
+	for _, elem := range elems {
+		welems = append(welems, &remoteWE{wd, elem.Element})
 	}
-	return elems, nil
+	return
 }
 
 func (wd *remoteWD) FindElements(by, value string) ([]WebElement, error) {
-	res, err := wd.find(by, value, "s", "")
-	if err != nil {
+	if res, err := wd.find(by, value, "s", ""); err == nil {
+		return decodeElements(wd, res), nil
+	} else {
 		return nil, err
 	}
-	return decodeElements(wd, res)
 }
 
 func (wd *remoteWD) Close() error {
@@ -431,11 +422,11 @@ func (wd *remoteWD) SwitchFrame(frame string) error {
 
 func (wd *remoteWD) ActiveElement() (WebElement, error) {
 	url := wd.url("/session/%s/element/active", wd.id)
-	res, err := wd.execute("GET", url, nil)
-	if err != nil {
+	if r, err := wd.send("GET", url, nil); err == nil {
+		return decodeElement(wd, r), nil
+	} else {
 		return nil, err
 	}
-	return decodeElement(wd, res)
 }
 
 func (wd *remoteWD) GetCookies() ([]Cookie, error) {
@@ -619,7 +610,7 @@ func (elem *remoteWE) FindElement(by, value string) (WebElement, error) {
 	if err != nil {
 		return nil, err
 	}
-	return decodeElement(elem.parent, res)
+	return decodeElement(elem.parent, res), nil
 }
 
 func (elem *remoteWE) FindElements(by, value string) ([]WebElement, error) {
@@ -627,7 +618,7 @@ func (elem *remoteWE) FindElements(by, value string) ([]WebElement, error) {
 	if err != nil {
 		return nil, err
 	}
-	return decodeElements(elem.parent, res)
+	return decodeElements(elem.parent, res), nil
 }
 
 func (elem *remoteWE) boolQuery(urlTemplate string) (bool, error) {
