@@ -151,6 +151,11 @@ var httpClient = http.Client{
 			return errors.New("stopped after 10 redirects")
 		}
 		req.Header.Add("Accept", jsonMIMEType)
+		if Trace {
+			if dump, err := httputil.DumpRequest(req, true); err == nil {
+				Log.Printf("-> TRACE (redirected request)\n%s", dump)
+			}
+		}
 		return nil
 	},
 }
