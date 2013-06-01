@@ -85,7 +85,7 @@ func TestNewSession(t *testing.T) {
 	if *runOnSauce {
 		return
 	}
-	wd := &remoteWD{capabilities: caps, executor: DEFAULT_EXECUTOR}
+	wd := &remoteWebDriver{capabilities: caps, executor: DEFAULT_EXECUTOR}
 	sid, err := wd.NewSession()
 	defer wd.Quit()
 

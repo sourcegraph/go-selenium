@@ -51,42 +51,19 @@ const (
 	jsonMIMEType     = "application/json"
 )
 
-type remoteWD struct {
+type remoteWebDriver struct {
 	id, executor string
 	capabilities Capabilities
 	// FIXME
 	// profile             BrowserProfile
 }
 
-// Server reply to WebDriver command.
-type reply struct {
-	SessionId string
-	Status    int
-	Value     json.RawMessage
-}
-
-func (r *reply) readValue(v interface{}) error {
-	return json.Unmarshal(r.Value, v)
-}
-
-func (wd *remoteWD) url(template string, args ...interface{}) string {
+func (wd *remoteWebDriver) url(template string, args ...interface{}) string {
 	path := fmt.Sprintf(template, args...)
 	return wd.executor + path
 }
 
-var httpClient = http.Client{
-	// WebDriver requires that all requests have an 'Accept: application/json' header. We must add
-	// it here because by default net/http will not include that header when following redirects.
-	CheckRedirect: func(req *http.Request, via []*http.Request) error {
-		if len(via) >= 10 {
-			return errors.New("stopped after 10 redirects")
-		}
-		req.Header.Add("Accept", jsonMIMEType)
-		return nil
-	},
-}
-
-func (wd *remoteWD) send(method, url string, data []byte) (r *reply, err error) {
+func (wd *remoteWebDriver) send(method, url string, data []byte) (r *reply, err error) {
 	var buf []byte
 	if buf, err = wd.execute(method, url, data); err == nil {
 		if len(buf) > 0 {
@@ -96,7 +73,7 @@ func (wd *remoteWD) send(method, url string, data []byte) (r *reply, err error) 
 	return
 }
 
-func (wd *remoteWD) execute(method, url string, data []byte) ([]byte, error) {
+func (wd *remoteWebDriver) execute(method, url string, data []byte) ([]byte, error) {
 	Log.Printf("-> %s %s [%d bytes]", method, url, len(data))
 	req, err := http.NewRequest(method, url, bytes.NewBuffer(data))
 	if err != nil {
@@ -166,6 +143,29 @@ func (wd *remoteWD) execute(method, url string, data []byte) ([]byte, error) {
 	return buf, nil
 }
 
+var httpClient = http.Client{
+	// WebDriver requires that all requests have an 'Accept: application/json' header. We must add
+	// it here because by default net/http will not include that header when following redirects.
+	CheckRedirect: func(req *http.Request, via []*http.Request) error {
+		if len(via) >= 10 {
+			return errors.New("stopped after 10 redirects")
+		}
+		req.Header.Add("Accept", jsonMIMEType)
+		return nil
+	},
+}
+
+// Server reply to WebDriver command.
+type reply struct {
+	SessionId string
+	Status    int
+	Value     json.RawMessage
+}
+
+func (r *reply) readValue(v interface{}) error {
+	return json.Unmarshal(r.Value, v)
+}
+
 /* Create new remote client, this will also start a new session.
    capabilities - the desired capabilities, see http://goo.gl/SNlAk
    executor - the URL to the Selenim server
@@ -176,7 +176,7 @@ func NewRemote(capabilities Capabilities, executor string) (WebDriver, error) {
 		executor = DEFAULT_EXECUTOR
 	}
 
-	wd := &remoteWD{executor: executor, capabilities: capabilities}
+	wd := &remoteWebDriver{executor: executor, capabilities: capabilities}
 	// FIXME: Handle profile
 
 	_, err := wd.NewSession()
@@ -187,7 +187,7 @@ func NewRemote(capabilities Capabilities, executor string) (WebDriver, error) {
 	return wd, nil
 }
 
-func (wd *remoteWD) stringCommand(urlTemplate string) (v string, err error) {
+func (wd *remoteWebDriver) stringCommand(urlTemplate string) (v string, err error) {
 	var r *reply
 	if r, err = wd.send("GET", wd.url(urlTemplate, wd.id), nil); err == nil {
 		err = r.readValue(&v)
@@ -195,7 +195,7 @@ func (wd *remoteWD) stringCommand(urlTemplate string) (v string, err error) {
 	return
 }
 
-func (wd *remoteWD) voidCommand(urlTemplate string, params interface{}) (err error) {
+func (wd *remoteWebDriver) voidCommand(urlTemplate string, params interface{}) (err error) {
 	var data []byte
 	if params != nil {
 		data, err = json.Marshal(params)
@@ -207,7 +207,7 @@ func (wd *remoteWD) voidCommand(urlTemplate string, params interface{}) (err err
 
 }
 
-func (wd remoteWD) stringsCommand(urlTemplate string) (v []string, err error) {
+func (wd remoteWebDriver) stringsCommand(urlTemplate string) (v []string, err error) {
 	var r *reply
 	if r, err = wd.send("GET", wd.url(urlTemplate, wd.id), nil); err == nil {
 		err = r.readValue(&v)
@@ -215,7 +215,7 @@ func (wd remoteWD) stringsCommand(urlTemplate string) (v []string, err error) {
 	return
 }
 
-func (wd *remoteWD) boolCommand(urlTemplate string) (v bool, err error) {
+func (wd *remoteWebDriver) boolCommand(urlTemplate string) (v bool, err error) {
 	var r *reply
 	if r, err = wd.send("GET", wd.url(urlTemplate, wd.id), nil); err == nil {
 		err = r.readValue(&v)
@@ -225,7 +225,7 @@ func (wd *remoteWD) boolCommand(urlTemplate string) (v bool, err error) {
 
 // WebDriver interface implementation
 
-func (wd *remoteWD) Status() (v *Status, err error) {
+func (wd *remoteWebDriver) Status() (v *Status, err error) {
 	var r *reply
 	if r, err = wd.send("GET", wd.url("/status"), nil); err == nil {
 		err = r.readValue(&v)
@@ -233,7 +233,7 @@ func (wd *remoteWD) Status() (v *Status, err error) {
 	return
 }
 
-func (wd *remoteWD) NewSession() (sessionId string, err error) {
+func (wd *remoteWebDriver) NewSession() (sessionId string, err error) {
 	message := map[string]interface{}{
 		"desiredCapabilities": wd.capabilities,
 	}
@@ -248,7 +248,7 @@ func (wd *remoteWD) NewSession() (sessionId string, err error) {
 	return
 }
 
-func (wd *remoteWD) Capabilities() (v Capabilities, err error) {
+func (wd *remoteWebDriver) Capabilities() (v Capabilities, err error) {
 	var r *reply
 	if r, err = wd.send("GET", wd.url("/session/%s", wd.id), nil); err == nil {
 		r.readValue(&v)
@@ -260,74 +260,74 @@ type timeoutParam struct {
 	Ms uint `json:"ms"`
 }
 
-func (wd *remoteWD) SetAsyncScriptTimeout(ms uint) error {
+func (wd *remoteWebDriver) SetAsyncScriptTimeout(ms uint) error {
 	return wd.voidCommand("/session/%s/timeouts/async_script", timeoutParam{ms})
 }
 
-func (wd *remoteWD) SetImplicitWaitTimeout(ms uint) error {
+func (wd *remoteWebDriver) SetImplicitWaitTimeout(ms uint) error {
 	return wd.voidCommand("/session/%s/timeouts/implicit_wait", timeoutParam{ms})
 }
 
-func (wd *remoteWD) AvailableEngines() ([]string, error) {
+func (wd *remoteWebDriver) AvailableEngines() ([]string, error) {
 	return wd.stringsCommand("/session/%s/ime/available_engines")
 }
 
-func (wd *remoteWD) ActiveEngine() (string, error) {
+func (wd *remoteWebDriver) ActiveEngine() (string, error) {
 	return wd.stringCommand("/session/%s/ime/active_engine")
 }
 
-func (wd *remoteWD) IsEngineActivated() (bool, error) {
+func (wd *remoteWebDriver) IsEngineActivated() (bool, error) {
 	return wd.boolCommand("/session/%s/ime/activated")
 }
 
-func (wd *remoteWD) DeactivateEngine() error {
+func (wd *remoteWebDriver) DeactivateEngine() error {
 	return wd.voidCommand("session/%s/ime/deactivate", nil)
 }
 
-func (wd *remoteWD) ActivateEngine(engine string) (err error) {
+func (wd *remoteWebDriver) ActivateEngine(engine string) (err error) {
 	return wd.voidCommand("/session/%s/ime/activate", map[string]string{"engine": engine})
 }
 
-func (wd *remoteWD) Quit() (err error) {
+func (wd *remoteWebDriver) Quit() (err error) {
 	if _, err = wd.execute("DELETE", wd.url("/session/%s", wd.id), nil); err == nil {
 		wd.id = ""
 	}
 	return
 }
 
-func (wd *remoteWD) CurrentWindowHandle() (string, error) {
+func (wd *remoteWebDriver) CurrentWindowHandle() (string, error) {
 	return wd.stringCommand("/session/%s/window_handle")
 }
 
-func (wd *remoteWD) WindowHandles() ([]string, error) {
+func (wd *remoteWebDriver) WindowHandles() ([]string, error) {
 	return wd.stringsCommand("/session/%s/window_handles")
 }
 
-func (wd *remoteWD) CurrentURL() (string, error) {
+func (wd *remoteWebDriver) CurrentURL() (string, error) {
 	return wd.stringCommand("/session/%s/url")
 }
 
-func (wd *remoteWD) Get(url string) error {
+func (wd *remoteWebDriver) Get(url string) error {
 	return wd.voidCommand("/session/%s/url", map[string]string{"url": url})
 }
 
-func (wd *remoteWD) Forward() error {
+func (wd *remoteWebDriver) Forward() error {
 	return wd.voidCommand("/session/%s/forward", nil)
 }
 
-func (wd *remoteWD) Back() error {
+func (wd *remoteWebDriver) Back() error {
 	return wd.voidCommand("/session/%s/back", nil)
 }
 
-func (wd *remoteWD) Refresh() error {
+func (wd *remoteWebDriver) Refresh() error {
 	return wd.voidCommand("/session/%s/refresh", nil)
 }
 
-func (wd *remoteWD) Title() (string, error) {
+func (wd *remoteWebDriver) Title() (string, error) {
 	return wd.stringCommand("/session/%s/title")
 }
 
-func (wd *remoteWD) PageSource() (string, error) {
+func (wd *remoteWebDriver) PageSource() (string, error) {
 	return wd.stringCommand("/session/%s/source")
 }
 
@@ -335,7 +335,7 @@ type element struct {
 	Element string `json:"ELEMENT"`
 }
 
-func (wd *remoteWD) find(by, value, suffix, url string) (r *reply, err error) {
+func (wd *remoteWebDriver) find(by, value, suffix, url string) (r *reply, err error) {
 	params := map[string]string{"using": by, "value": value}
 	var data []byte
 	if data, err = json.Marshal(params); err == nil {
@@ -349,7 +349,7 @@ func (wd *remoteWD) find(by, value, suffix, url string) (r *reply, err error) {
 	return
 }
 
-func decodeElement(wd *remoteWD, r *reply) WebElement {
+func decodeElement(wd *remoteWebDriver, r *reply) WebElement {
 	var elem element
 	if err := r.readValue(&elem); err != nil {
 		panic(err.Error() + ": " + string(r.Value))
@@ -357,7 +357,7 @@ func decodeElement(wd *remoteWD, r *reply) WebElement {
 	return &remoteWE{parent: wd, id: elem.Element}
 }
 
-func (wd *remoteWD) FindElement(by, value string) (WebElement, error) {
+func (wd *remoteWebDriver) FindElement(by, value string) (WebElement, error) {
 	if res, err := wd.find(by, value, "", ""); err == nil {
 		return decodeElement(wd, res), nil
 	} else {
@@ -365,7 +365,7 @@ func (wd *remoteWD) FindElement(by, value string) (WebElement, error) {
 	}
 }
 
-func decodeElements(wd *remoteWD, r *reply) (welems []WebElement) {
+func decodeElements(wd *remoteWebDriver, r *reply) (welems []WebElement) {
 	var elems []element
 	if err := r.readValue(&elems); err != nil {
 		panic(err.Error() + ": " + string(r.Value))
@@ -376,7 +376,7 @@ func decodeElements(wd *remoteWD, r *reply) (welems []WebElement) {
 	return
 }
 
-func (wd *remoteWD) FindElements(by, value string) ([]WebElement, error) {
+func (wd *remoteWebDriver) FindElements(by, value string) ([]WebElement, error) {
 	if res, err := wd.find(by, value, "s", ""); err == nil {
 		return decodeElements(wd, res), nil
 	} else {
@@ -384,27 +384,27 @@ func (wd *remoteWD) FindElements(by, value string) ([]WebElement, error) {
 	}
 }
 
-func (wd *remoteWD) Close() error {
+func (wd *remoteWebDriver) Close() error {
 	_, err := wd.execute("DELETE", wd.url("/session/%s/window", wd.id), nil)
 	return err
 }
 
-func (wd *remoteWD) SwitchWindow(name string) error {
+func (wd *remoteWebDriver) SwitchWindow(name string) error {
 	params := map[string]string{"name": name}
 	return wd.voidCommand("/session/%s/window", params)
 }
 
-func (wd *remoteWD) CloseWindow(name string) error {
+func (wd *remoteWebDriver) CloseWindow(name string) error {
 	_, err := wd.execute("DELETE", wd.url("/session/%s/window", wd.id), nil)
 	return err
 }
 
-func (wd *remoteWD) SwitchFrame(frame string) error {
+func (wd *remoteWebDriver) SwitchFrame(frame string) error {
 	params := map[string]string{"id": frame}
 	return wd.voidCommand("/session/%s/frame", params)
 }
 
-func (wd *remoteWD) ActiveElement() (WebElement, error) {
+func (wd *remoteWebDriver) ActiveElement() (WebElement, error) {
 	url := wd.url("/session/%s/element/active", wd.id)
 	if r, err := wd.send("GET", url, nil); err == nil {
 		return decodeElement(wd, r), nil
@@ -413,7 +413,7 @@ func (wd *remoteWD) ActiveElement() (WebElement, error) {
 	}
 }
 
-func (wd *remoteWD) GetCookies() (c []Cookie, err error) {
+func (wd *remoteWebDriver) GetCookies() (c []Cookie, err error) {
 	var r *reply
 	if r, err = wd.send("GET", wd.url("/session/%s/cookie", wd.id), nil); err == nil {
 		err = r.readValue(&c)
@@ -421,39 +421,39 @@ func (wd *remoteWD) GetCookies() (c []Cookie, err error) {
 	return
 }
 
-func (wd *remoteWD) AddCookie(cookie *Cookie) error {
+func (wd *remoteWebDriver) AddCookie(cookie *Cookie) error {
 	params := map[string]*Cookie{"cookie": cookie}
 	return wd.voidCommand("/session/%s/cookie", params)
 }
 
-func (wd *remoteWD) DeleteAllCookies() error {
+func (wd *remoteWebDriver) DeleteAllCookies() error {
 	_, err := wd.execute("DELETE", wd.url("/session/%s/cookie", wd.id), nil)
 	return err
 }
 
-func (wd *remoteWD) DeleteCookie(name string) error {
+func (wd *remoteWebDriver) DeleteCookie(name string) error {
 	_, err := wd.execute("DELETE", wd.url("/session/%s/cookie/%s", wd.id, name), nil)
 	return err
 }
 
-func (wd *remoteWD) Click(button int) error {
+func (wd *remoteWebDriver) Click(button int) error {
 	params := map[string]int{"button": button}
 	return wd.voidCommand("/session/%s/click", params)
 }
 
-func (wd *remoteWD) DoubleClick() error {
+func (wd *remoteWebDriver) DoubleClick() error {
 	return wd.voidCommand("/session/%s/doubleclick", nil)
 }
 
-func (wd *remoteWD) ButtonDown() error {
+func (wd *remoteWebDriver) ButtonDown() error {
 	return wd.voidCommand("/session/%s/buttondown", nil)
 }
 
-func (wd *remoteWD) ButtonUp() error {
+func (wd *remoteWebDriver) ButtonUp() error {
 	return wd.voidCommand("/session/%s/buttonup", nil)
 }
 
-func (wd *remoteWD) SendModifier(modifier string, isDown bool) error {
+func (wd *remoteWebDriver) SendModifier(modifier string, isDown bool) error {
 	params := map[string]interface{}{
 		"value":  modifier,
 		"isdown": isDown,
@@ -467,24 +467,24 @@ func (wd *remoteWD) SendModifier(modifier string, isDown bool) error {
 	return wd.voidCommand("/session/%s/modifier", data)
 }
 
-func (wd *remoteWD) DismissAlert() error {
+func (wd *remoteWebDriver) DismissAlert() error {
 	return wd.voidCommand("/session/%s/dismiss_alert", nil)
 }
 
-func (wd *remoteWD) AcceptAlert() error {
+func (wd *remoteWebDriver) AcceptAlert() error {
 	return wd.voidCommand("/session/%s/accept_alert", nil)
 }
 
-func (wd *remoteWD) AlertText() (string, error) {
+func (wd *remoteWebDriver) AlertText() (string, error) {
 	return wd.stringCommand("/session/%s/alert_text")
 }
 
-func (wd *remoteWD) SetAlertText(text string) error {
+func (wd *remoteWebDriver) SetAlertText(text string) error {
 	params := map[string]string{"text": text}
 	return wd.voidCommand("/session/%s/alert_text", params)
 }
 
-func (wd *remoteWD) execScript(script string, args []interface{}, suffix string) (res interface{}, err error) {
+func (wd *remoteWebDriver) execScript(script string, args []interface{}, suffix string) (res interface{}, err error) {
 	params := map[string]interface{}{
 		"script": script,
 		"args":   args,
@@ -501,15 +501,15 @@ func (wd *remoteWD) execScript(script string, args []interface{}, suffix string)
 	return
 }
 
-func (wd *remoteWD) ExecuteScript(script string, args []interface{}) (interface{}, error) {
+func (wd *remoteWebDriver) ExecuteScript(script string, args []interface{}) (interface{}, error) {
 	return wd.execScript(script, args, "")
 }
 
-func (wd *remoteWD) ExecuteScriptAsync(script string, args []interface{}) (interface{}, error) {
+func (wd *remoteWebDriver) ExecuteScriptAsync(script string, args []interface{}) (interface{}, error) {
 	return wd.execScript(script, args, "_async")
 }
 
-func (wd *remoteWD) Screenshot() ([]byte, error) {
+func (wd *remoteWebDriver) Screenshot() ([]byte, error) {
 	data, err := wd.stringCommand("/session/%s/screenshot")
 	if err != nil {
 		return nil, err
@@ -524,7 +524,7 @@ func (wd *remoteWD) Screenshot() ([]byte, error) {
 // WebElement interface implementation
 
 type remoteWE struct {
-	parent *remoteWD
+	parent *remoteWebDriver
 	id     string
 }
 
