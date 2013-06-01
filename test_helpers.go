@@ -179,7 +179,7 @@ func (wt *webDriverT) FindElement(by, value string) (elem WebElementT) {
 	if elem_, err := wt.d.FindElement(by, value); err == nil {
 		elem = elem_.T(wt.t)
 	} else {
-		wt.t.Fatalf("FindElement(by=%s, value=%s): %s", by, value, err)
+		wt.t.Fatalf("FindElement(by=%q, value=%q): %s", by, value, err)
 	}
 	return
 }
@@ -190,7 +190,7 @@ func (wt *webDriverT) FindElements(by, value string) (elems []WebElementT) {
 			elems = append(elems, elem.T(wt.t))
 		}
 	} else {
-		wt.t.Fatalf("FindElements(by=%s, value=%s): %s", by, value, err)
+		wt.t.Fatalf("FindElements(by=%q, value=%q): %s", by, value, err)
 	}
 	return
 }
@@ -375,7 +375,7 @@ func (wt *webElementT) MoveTo(xOffset, yOffset int) {
 func (wt *webElementT) FindElement(by, value string) (elem WebElement) {
 	var err error
 	if elem, err = wt.e.FindElement(by, value); err != nil {
-		wt.t.Fatalf("FindElement(by=%s, value=%s): %s", by, value, err)
+		wt.t.Fatalf("FindElement(by=%q, value=%q): %s", by, value, err)
 	}
 	return
 }
@@ -383,7 +383,7 @@ func (wt *webElementT) FindElement(by, value string) (elem WebElement) {
 func (wt *webElementT) FindElements(by, value string) (elems []WebElement) {
 	var err error
 	if elems, err = wt.e.FindElements(by, value); err != nil {
-		wt.t.Fatalf("FindElements(by=%s, value=%s): %s", by, value, err)
+		wt.t.Fatalf("FindElements(by=%q, value=%q): %s", by, value, err)
 	}
 	return
 }
