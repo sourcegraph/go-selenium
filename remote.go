@@ -75,7 +75,9 @@ func (wd *remoteWebDriver) send(method, url string, data []byte) (r *reply, err 
 }
 
 func (wd *remoteWebDriver) execute(method, url string, data []byte) ([]byte, error) {
-	Log.Printf("-> %s %s [%d bytes]", method, url, len(data))
+	if Log != nil {
+		Log.Printf("-> %s %s [%d bytes]", method, url, len(data))
+	}
 	req, err := http.NewRequest(method, url, bytes.NewBuffer(data))
 	if err != nil {
 		return nil, err
@@ -83,7 +85,7 @@ func (wd *remoteWebDriver) execute(method, url string, data []byte) ([]byte, err
 	req.Header.Add("Accept", jsonMIMEType)
 
 	if Trace {
-		if dump, err := httputil.DumpRequest(req, true); err == nil {
+		if dump, err := httputil.DumpRequest(req, true); err == nil && Log != nil {
 			Log.Printf("-> TRACE\n%s", dump)
 		}
 	}
@@ -94,7 +96,7 @@ func (wd *remoteWebDriver) execute(method, url string, data []byte) ([]byte, err
 	}
 
 	if Trace {
-		if dump, err := httputil.DumpResponse(res, true); err == nil {
+		if dump, err := httputil.DumpResponse(res, true); err == nil && Log != nil {
 			Log.Printf("<- TRACE\n%s", dump)
 		}
 	}
@@ -103,7 +105,9 @@ func (wd *remoteWebDriver) execute(method, url string, data []byte) ([]byte, err
 	if err != nil {
 		return nil, err
 	}
-	Log.Printf("<- %s (%s) [%d bytes]", res.Status, res.Header["Content-Type"], len(buf))
+	if Log != nil {
+		Log.Printf("<- %s (%s) [%d bytes]", res.Status, res.Header["Content-Type"], len(buf))
+	}
 
 	if res.StatusCode >= 400 {
 		reply := new(reply)
@@ -153,7 +157,7 @@ var httpClient = http.Client{
 		}
 		req.Header.Add("Accept", jsonMIMEType)
 		if Trace {
-			if dump, err := httputil.DumpRequest(req, true); err == nil {
+			if dump, err := httputil.DumpRequest(req, true); err == nil && Log != nil {
 				Log.Printf("-> TRACE (redirected request)\n%s", dump)
 			}
 		}
