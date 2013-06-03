@@ -194,23 +194,31 @@ func TestPageSource(t *testing.T) {
 	}
 }
 
+type elementFinder interface {
+	FindElement(by, value string) WebElementT
+	FindElements(by, value string) []WebElementT
+}
+
 func TestFindElement(t *testing.T) {
 	t.Parallel()
 	wd := newRemote("TestFindElement", t).T(t)
 	defer wd.Quit()
-
 	wd.Get(serverURL)
-	elem := wd.FindElement(ByName, "q")
+	testFindElement(t, wd, ByCSSSelector, "ol.list li", "foo")
+}
 
-	we, ok := elem.(*webElementT).e.(*remoteWE)
-	if !ok {
-		t.Fatal("Can't convert to *remoteWE")
-	}
-	if we.id == "" {
-		t.Fatal("Empty element")
-	}
-	if we.parent != wd.(*webDriverT).d.(*remoteWebDriver) {
-		t.Fatal("Bad parent")
+func TestFindChildElement(t *testing.T) {
+	t.Parallel()
+	wd := newRemote("TestFindChildElement", t).T(t)
+	defer wd.Quit()
+	wd.Get(serverURL)
+	testFindElement(t, wd.FindElement(ByTagName, "body"), ByCSSSelector, "ol.list li", "foo")
+}
+
+func testFindElement(t *testing.T, ef elementFinder, by, value string, txt string) {
+	elem := ef.FindElement(by, value)
+	if want, got := txt, elem.Text(); want != got {
+		t.Errorf("Elem for %q %q: want text %q, got %q", by, value, want, got)
 	}
 }
 
@@ -218,23 +226,29 @@ func TestFindElements(t *testing.T) {
 	t.Parallel()
 	wd := newRemote("TestFindElements", t).T(t)
 	defer wd.Quit()
-
 	wd.Get(serverURL)
-	elems := wd.FindElements(ByName, "q")
-	if len(elems) != 1 {
-		t.Fatal("Wrong number of elements %d (should be 1)", len(elems))
-	}
+	testFindElements(t, wd, ByCSSSelector, "ol.list li", []string{"foo", "bar"})
+}
 
-	we, ok := elems[0].(*webElementT).e.(*remoteWE)
-	if !ok {
-		t.Fatal("Can't convert to *remoteWE")
-	}
+func TestFindChildElements(t *testing.T) {
+	t.Parallel()
+	wd := newRemote("TestFindChildElements", t).T(t)
+	defer wd.Quit()
+	wd.Get(serverURL)
+	testFindElements(t, wd.FindElement(ByCSSSelector, "ol.list"), ByCSSSelector, "li", []string{"foo", "bar"})
+}
 
-	if we.id == "" {
-		t.Fatal("Empty element")
+func testFindElements(t *testing.T, ef elementFinder, by, value string, elemsTxt []string) {
+	elems := ef.FindElements(by, value)
+	if len(elems) != len(elemsTxt) {
+		t.Fatal("Wrong number of elements %d (should be %d)", len(elems), len(elemsTxt))
 	}
-	if we.parent != wd.(*webDriverT).d.(*remoteWebDriver) {
-		t.Fatal("Bad parent")
+	t.Logf("Found %d elements for %q %q", len(elems), by, value)
+	for i, txt := range elemsTxt {
+		elem := elems[i]
+		if want, got := txt, elem.Text(); want != got {
+			t.Errorf("Elem %d for %q %q: want text %q, got %q", i, by, value, want, got)
+		}
 	}
 }
 
@@ -441,6 +455,14 @@ var homePage = `
 		<input name="q" /> <input type="submit" id="submit"/> <br />
 		<input id="chuk" type="checkbox" /> A checkbox.
 	</form>
+    <ol class="list">
+      <li>foo</li>
+      <li>bar</li>
+    </ol>
+    <ol class="otherlist">
+      <li>baz</li>
+      <li>qux</li>
+    </ol>
 </body>
 </html>
 `
