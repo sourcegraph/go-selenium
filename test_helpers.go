@@ -322,8 +322,8 @@ type WebElementT interface {
 	Clear()
 	MoveTo(xOffset, yOffset int)
 
-	FindElement(by, value string) WebElement
-	FindElements(by, value string) []WebElement
+	FindElement(by, value string) WebElementT
+	FindElements(by, value string) []WebElementT
 
 	TagName() string
 	Text() string
@@ -372,20 +372,26 @@ func (wt *webElementT) MoveTo(xOffset, yOffset int) {
 	}
 }
 
-func (wt *webElementT) FindElement(by, value string) (elem WebElement) {
-	var err error
-	if elem, err = wt.e.FindElement(by, value); err != nil {
+func (wt *webElementT) FindElement(by, value string) WebElementT {
+	if elem, err := wt.e.FindElement(by, value); err == nil {
+		return elem.T(wt.t)
+	} else {
 		wt.t.Fatalf("FindElement(by=%q, value=%q): %s", by, value, err)
+		panic("unreachable")
 	}
-	return
 }
 
-func (wt *webElementT) FindElements(by, value string) (elems []WebElement) {
-	var err error
-	if elems, err = wt.e.FindElements(by, value); err != nil {
+func (wt *webElementT) FindElements(by, value string) []WebElementT {
+	if elems, err := wt.e.FindElements(by, value); err == nil {
+		elemsT := make([]WebElementT, len(elems))
+		for i, elem := range elems {
+			elemsT[i] = elem.T(wt.t)
+		}
+		return elemsT
+	} else {
 		wt.t.Fatalf("FindElements(by=%q, value=%q): %s", by, value, err)
+		panic("unreachable")
 	}
-	return
 }
 
 func (wt *webElementT) TagName() (v string) {
