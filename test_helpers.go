@@ -34,6 +34,11 @@ type WebDriverT interface {
 	FindElements(by, value string) []WebElementT
 	ActiveElement() WebElement
 
+	// Shortcut for FindElement(ByCSSSelector, sel)
+	Q(sel string) WebElementT
+	// Shortcut for FindElements(ByCSSSelector, sel)
+	QAll(sel string) []WebElementT
+
 	GetCookies() []Cookie
 	AddCookie(cookie *Cookie)
 	DeleteAllCookies()
@@ -195,6 +200,14 @@ func (wt *webDriverT) FindElements(by, value string) (elems []WebElementT) {
 	return
 }
 
+func (wt *webDriverT) Q(sel string) (elem WebElementT) {
+	return wt.FindElement(ByCSSSelector, sel)
+}
+
+func (wt *webDriverT) QAll(sel string) (elems []WebElementT) {
+	return wt.FindElements(ByCSSSelector, sel)
+}
+
 func (wt *webDriverT) ActiveElement() (elem WebElement) {
 	var err error
 	if elem, err = wt.d.ActiveElement(); err != nil {
@@ -325,6 +338,11 @@ type WebElementT interface {
 	FindElement(by, value string) WebElementT
 	FindElements(by, value string) []WebElementT
 
+	// Shortcut for FindElement(ByCSSSelector, sel)
+	Q(sel string) WebElementT
+	// Shortcut for FindElements(ByCSSSelector, sel)
+	QAll(sel string) []WebElementT
+
 	TagName() string
 	Text() string
 	IsSelected() bool
@@ -392,6 +410,14 @@ func (wt *webElementT) FindElements(by, value string) []WebElementT {
 		wt.t.Fatalf("FindElements(by=%q, value=%q): %s", by, value, err)
 		panic("unreachable")
 	}
+}
+
+func (wt *webElementT) Q(sel string) (elem WebElementT) {
+	return wt.FindElement(ByCSSSelector, sel)
+}
+
+func (wt *webElementT) QAll(sel string) (elems []WebElementT) {
+	return wt.FindElements(ByCSSSelector, sel)
 }
 
 func (wt *webElementT) TagName() (v string) {
