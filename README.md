@@ -11,16 +11,16 @@ Usage
 =====
 
 See full package documentation at
-[godoc.org/github.com/sqs/go-selenium](http://godoc.org/github.com/sqs/go-selenium).
+[godoc.org/github.com/sourcegraph/go-selenium](http://godoc.org/github.com/sourcegraph/go-selenium).
 
-Example: [example_test.go](https://github.com/sqs/go-selenium/blob/master/example_test.go):
+Example: [example_test.go](https://github.com/sourcegraph/go-selenium/blob/master/example_test.go):
 
 ```go
 package selenium_test
 
 import (
 	"fmt"
-	"github.com/sqs/go-selenium"
+	"github.com/sourcegraph/go-selenium"
 )
 
 func ExampleFindElement() {
@@ -33,7 +33,7 @@ func ExampleFindElement() {
 	}
 	defer webDriver.Quit()
 
-	err = webDriver.Get("https://github.com/sqs/go-selenium")
+	err = webDriver.Get("https://github.com/sourcegraph/go-selenium")
 	if err != nil {
 		fmt.Printf("Failed to load page: %s\n", err)
 		return
@@ -74,7 +74,7 @@ from the return values and instead calls `t.Fatalf` upon encountering an error. 
 package mytest
 
 import (
-  "github.com/sqs/go-selenium"
+  "github.com/sourcegraph/go-selenium"
   "testing"
 )
 
@@ -104,7 +104,7 @@ func TestWithT(t *testing.T) {
 }
 ```
 
-See [remote_test.go](https://github.com/sqs/go-selenium/blob/master/remote_test.go) for more usage
+See [remote_test.go](https://github.com/sourcegraph/go-selenium/blob/master/remote_test.go) for more usage
 examples.
 
 

@@ -2,7 +2,7 @@ package selenium_test
 
 import (
 	"fmt"
-	"github.com/sqs/go-selenium"
+	"github.com/sourcegraph/go-selenium"
 )
 
 func ExampleFindElement() {
@@ -15,7 +15,7 @@ func ExampleFindElement() {
 	}
 	defer webDriver.Quit()
 
-	err = webDriver.Get("https://github.com/sqs/go-selenium")
+	err = webDriver.Get("https://github.com/sourcegraph/go-selenium")
 	if err != nil {
 		fmt.Printf("Failed to load page: %s\n", err)
 		return
