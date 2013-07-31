@@ -105,12 +105,12 @@ type Status struct {
 
 /* Point */
 type Point struct {
-	X, Y int
+	X, Y float64
 }
 
 /* Size */
 type Size struct {
-	Width, Height int
+	Width, Height float64
 }
 
 /* Cookie */
