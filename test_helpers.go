@@ -9,6 +9,8 @@ import (
 // current test. The methods of WebDriverT call wt.t.Fatalf upon encountering errors instead of using
 // multiple returns to indicate errors.
 type WebDriverT interface {
+	WebDriver() WebDriver
+
 	NewSession() string
 
 	SetAsyncScriptTimeout(ms uint)
@@ -64,6 +66,10 @@ type WebDriverT interface {
 type webDriverT struct {
 	d WebDriver
 	t *testing.T
+}
+
+func (wt *webDriverT) WebDriver() WebDriver {
+	return wt.d
 }
 
 func (wt *webDriverT) NewSession() (id string) {
@@ -329,6 +335,8 @@ func (wt *webDriverT) ExecuteScriptAsync(script string, args []interface{}) (res
 // current test. The methods of WebElementT call wt.t.Fatalf upon encountering errors instead of using
 // multiple returns to indicate errors.
 type WebElementT interface {
+	WebElement() WebElement
+
 	Click()
 	SendKeys(keys string)
 	Submit()
@@ -358,6 +366,10 @@ type WebElementT interface {
 type webElementT struct {
 	e WebElement
 	t *testing.T
+}
+
+func (wt *webElementT) WebElement() WebElement {
+	return wt.e
 }
 
 func (wt *webElementT) Click() {
