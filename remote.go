@@ -394,6 +394,14 @@ func (wd *remoteWebDriver) FindElements(by, value string) ([]WebElement, error) 
 	}
 }
 
+func (wd *remoteWebDriver) Q(sel string) (WebElement, error) {
+	return wd.FindElement(ByCSSSelector, sel)
+}
+
+func (wd *remoteWebDriver) QAll(sel string) ([]WebElement, error) {
+	return wd.FindElements(ByCSSSelector, sel)
+}
+
 func (wd *remoteWebDriver) Close() error {
 	_, err := wd.execute("DELETE", wd.url("/session/%s/window", wd.id), nil)
 	return err
@@ -592,6 +600,14 @@ func (elem *remoteWE) FindElement(by, value string) (WebElement, error) {
 		return nil, err
 	}
 	return decodeElement(elem.parent, res), nil
+}
+
+func (elem *remoteWE) Q(sel string) (WebElement, error) {
+	return elem.FindElement(ByCSSSelector, sel)
+}
+
+func (elem *remoteWE) QAll(sel string) ([]WebElement, error) {
+	return elem.FindElements(ByCSSSelector, sel)
 }
 
 func (elem *remoteWE) FindElements(by, value string) ([]WebElement, error) {

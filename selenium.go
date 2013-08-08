@@ -190,6 +190,11 @@ type WebDriver interface {
 	/* Current active element. */
 	ActiveElement() (WebElement, error)
 
+	// Shortcut for FindElement(ByCSSSelector, sel)
+	Q(sel string) (WebElement, error)
+	// Shortcut for FindElements(ByCSSSelector, sel)
+	QAll(sel string) ([]WebElement, error)
+
 	// Cookies
 	/* Get all cookies */
 	GetCookies() ([]Cookie, error)
@@ -260,6 +265,11 @@ type WebElement interface {
 	FindElement(by, value string) (WebElement, error)
 	/* Find children, return list of elements. */
 	FindElements(by, value string) ([]WebElement, error)
+
+	// Shortcut for FindElement(ByCSSSelector, sel)
+	Q(sel string) (WebElement, error)
+	// Shortcut for FindElements(ByCSSSelector, sel)
+	QAll(sel string) ([]WebElement, error)
 
 	// Porperties
 
