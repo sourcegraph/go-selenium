@@ -10,7 +10,7 @@ Note: the public API is experimental and subject to change until further notice.
 Usage
 =====
 
-Documentation: [go-selenium on Sourcegraph](https://sourcegraph.com/repos/github.com/sourcegraph/go-selenium).
+Documentation: [go-selenium on Sourcegraph](https://sourcegraph.com/github.com/sourcegraph/go-selenium).
 
 Example: [example_test.go](https://github.com/sourcegraph/go-selenium/blob/master/example_test.go):
 
