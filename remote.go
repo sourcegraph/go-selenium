@@ -83,6 +83,9 @@ func (wd *remoteWebDriver) execute(method, url string, data []byte) ([]byte, err
 		return nil, err
 	}
 	req.Header.Add("Accept", jsonMIMEType)
+	if method == "POST" {
+		req.Header.Add("Content-Type", jsonMIMEType)
+	}
 
 	if Trace {
 		if dump, err := httputil.DumpRequest(req, true); err == nil && Log != nil {
@@ -503,6 +506,9 @@ func (wd *remoteWebDriver) SetAlertText(text string) error {
 }
 
 func (wd *remoteWebDriver) execScript(script string, args []interface{}, suffix string) (res interface{}, err error) {
+	if args == nil {
+		args = []interface{}{}
+	}
 	params := map[string]interface{}{
 		"script": script,
 		"args":   args,
