@@ -43,6 +43,6 @@ func ExampleFindElement() {
 	}
 
 	// output:
-	// Page title: sqs/go-selenium · GitHub
+	// Page title: sourcegraph/go-selenium · GitHub
 	// Repository: go-selenium
 }
