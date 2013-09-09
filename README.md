@@ -2,6 +2,10 @@
 go-selenium - Selenium WebDriver client for Go
 ==============================================
 
+[![xrefs](https://sourcegraph.com/api/repos/github.com/sourcegraph/go-selenium/badges/xrefs.png)](https://sourcegraph.com/github.com/sourcegraph/go-selenium)
+[![funcs](https://sourcegraph.com/api/repos/github.com/sourcegraph/go-selenium/badges/funcs.png)](https://sourcegraph.com/github.com/sourcegraph/go-selenium)
+[![top func](https://sourcegraph.com/api/repos/github.com/sourcegraph/go-selenium/badges/top-func.png)](https://sourcegraph.com/github.com/sourcegraph/go-selenium)
+
 go-selenium is a [Selenium](http://seleniumhq.org) WebDriver client for [Go](http://golang.org).
 
 Note: the public API is experimental and subject to change until further notice.
