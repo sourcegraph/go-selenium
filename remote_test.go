@@ -126,6 +126,28 @@ func TestWindowHandles(t *testing.T) {
 	}
 }
 
+func TestWindowSize(t *testing.T) {
+	t.Parallel()
+	wd := newRemote("TestWindowSize", t).T(t)
+	defer wd.Quit()
+
+	size := wd.WindowSize(wd.CurrentWindowHandle())
+	if size == nil || size.Height == 0 || size.Width == 0 {
+		t.Fatal("Window size failed with size: %+v", size)
+	}
+}
+
+func TestWindowPosition(t *testing.T) {
+	t.Parallel()
+	wd := newRemote("TestWindowPosition", t).T(t)
+	defer wd.Quit()
+
+	pos := wd.WindowPosition(wd.CurrentWindowHandle())
+	if pos == nil {
+		t.Fatal("Window position failed")
+	}
+}
+
 func TestGet(t *testing.T) {
 	t.Parallel()
 	wd := newRemote("TestGet", t).T(t)

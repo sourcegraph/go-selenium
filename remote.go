@@ -420,6 +420,24 @@ func (wd *remoteWebDriver) CloseWindow(name string) error {
 	return err
 }
 
+func (wd *remoteWebDriver) WindowSize(name string) (sz *Size, err error) {
+	url := wd.url("/session/%s/window/%s/size", wd.id, name)
+	var r *reply
+	if r, err = wd.send("GET", url, nil); err == nil {
+		err = r.readValue(&sz)
+	}
+	return
+}
+
+func (wd *remoteWebDriver) WindowPosition(name string) (pt *Point, err error) {
+	url := wd.url("/session/%s/window/%s/position", wd.id, name)
+	var r *reply
+	if r, err = wd.send("GET", url, nil); err == nil {
+		err = r.readValue(&pt)
+	}
+	return
+}
+
 func (wd *remoteWebDriver) SwitchFrame(frame string) error {
 	params := map[string]string{"id": frame}
 	return wd.voidCommand("/session/%s/frame", params)

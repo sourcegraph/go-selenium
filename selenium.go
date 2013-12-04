@@ -171,6 +171,10 @@ type WebDriver interface {
 	SwitchWindow(name string) error
 	/* Close window. */
 	CloseWindow(name string) error
+	/* Get window size */
+	WindowSize(name string) (*Size, error)
+	/* Get window position */
+	WindowPosition(name string) (*Point, error)
 
 	// Navigation
 	/* Open url. */
@@ -287,7 +291,8 @@ type WebElement interface {
 	GetAttribute(name string) (string, error)
 	/* Element location. */
 	Location() (*Point, error)
-	/* Element location once it has been scrolled into view. */
+	/* Element location once it has been scrolled into view.
+	   Note: This is considered an internal command and should only be used to determine an element's location for correctly generating native events.*/
 	LocationInView() (*Point, error)
 	/* Element size */
 	Size() (*Size, error)
