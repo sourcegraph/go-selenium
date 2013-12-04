@@ -26,6 +26,8 @@ type WebDriverT interface {
 	SwitchFrame(frame string)
 	SwitchWindow(name string)
 	CloseWindow(name string)
+	WindowSize(name string) *Size
+	WindowPosition(name string) *Point
 
 	Get(url string)
 	Forward()
@@ -160,6 +162,22 @@ func (wt *webDriverT) CloseWindow(name string) {
 	if err := wt.d.CloseWindow(name); err != nil {
 		wt.t.Fatalf("CloseWindow(%q): %s", name, err)
 	}
+}
+
+func (wt *webDriverT) WindowSize(name string) *Size {
+	sz, err := wt.d.WindowSize(name)
+	if err != nil {
+		wt.t.Fatalf("WindowSize(%q): %s", name, err)
+	}
+	return sz
+}
+
+func (wt *webDriverT) WindowPosition(name string) *Point {
+	pt, err := wt.d.WindowPosition(name)
+	if err != nil {
+		wt.t.Fatalf("WindowPosition(%q): %s", name, err)
+	}
+	return pt
 }
 
 func (wt *webDriverT) Get(name string) {
