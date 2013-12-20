@@ -1,9 +1,5 @@
 package selenium
 
-import (
-	"testing"
-)
-
 /* Element finding options */
 const (
 	ById              = "id"
@@ -244,9 +240,12 @@ type WebDriver interface {
 	/* Execute a script async. */
 	ExecuteScriptAsync(script string, args []interface{}) (interface{}, error)
 
-	// Get a WebDriverT of this element that has methods that call t.Fatalf upon encountering
-	// errors instead of using multiple returns to indicate errors.
-	T(t *testing.T) WebDriverT
+	// Get a WebDriverT of this element that has methods that call t.Fatalf upon
+	// encountering errors instead of using multiple returns to indicate errors.
+	// The argument t is typically a *testing.T, but here it's a similar
+	// interface to avoid needing to import "testing" (which registers global
+	// command-line flags).
+	T(t TestingT) WebDriverT
 }
 
 type WebElement interface {
@@ -299,7 +298,14 @@ type WebElement interface {
 	/* Get element CSS property value. */
 	CSSProperty(name string) (string, error)
 
-	// Get a WebElementT of this element that has methods that call t.Fatalf upon encountering
-	// errors instead of using multiple returns to indicate errors.
-	T(t *testing.T) WebElementT
+	// Get a WebElementT of this element that has methods that call t.Fatalf
+	// upon encountering errors instead of using multiple returns to indicate
+	// errors. The argument t is typically a *testing.T, but here it's a similar
+	// interface to avoid needing to import "testing" (which registers global
+	// command-line flags).
+	T(t TestingT) WebElementT
+}
+
+type TestingT interface {
+	Fatalf(fmt string, v ...interface{})
 }

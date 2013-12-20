@@ -17,7 +17,6 @@ import (
 	"net/http/httputil"
 	"os"
 	"strings"
-	"testing"
 )
 
 var Log = log.New(os.Stderr, "[selenium] ", log.Ltime|log.Lmicroseconds)
@@ -563,7 +562,7 @@ func (wd *remoteWebDriver) Screenshot() ([]byte, error) {
 	return ioutil.ReadAll(decoder)
 }
 
-func (wd *remoteWebDriver) T(t *testing.T) WebDriverT {
+func (wd *remoteWebDriver) T(t TestingT) WebDriverT {
 	return &webDriverT{wd, t}
 }
 
@@ -701,6 +700,6 @@ func (elem *remoteWE) CSSProperty(name string) (string, error) {
 	return elem.parent.stringCommand(urlTemplate)
 }
 
-func (elem *remoteWE) T(t *testing.T) WebElementT {
+func (elem *remoteWE) T(t TestingT) WebElementT {
 	return &webElementT{elem, t}
 }

@@ -1,9 +1,5 @@
 package selenium
 
-import (
-	"testing"
-)
-
 // A single-return-value interface to WebDriverT that is useful when using WebDrivers in test code.
 // Obtain a WebDriverT by calling webDriver.T(t), where t *testing.T is the test handle for the
 // current test. The methods of WebDriverT call wt.t.Fatalf upon encountering errors instead of using
@@ -67,7 +63,7 @@ type WebDriverT interface {
 
 type webDriverT struct {
 	d WebDriver
-	t *testing.T
+	t TestingT
 }
 
 func (wt *webDriverT) WebDriver() WebDriver {
@@ -383,7 +379,7 @@ type WebElementT interface {
 
 type webElementT struct {
 	e WebElement
-	t *testing.T
+	t TestingT
 }
 
 func (wt *webElementT) WebElement() WebElement {
