@@ -148,6 +148,22 @@ func TestWindowPosition(t *testing.T) {
 	}
 }
 
+func TestResizeWindow(t *testing.T) {
+	t.Parallel()
+	wd := newRemote("TestResizeWindow", t).T(t)
+	defer wd.Quit()
+
+	wd.ResizeWindow(wd.CurrentWindowHandle(), Size{400, 400})
+
+	sz := wd.WindowSize(wd.CurrentWindowHandle())
+	if int(sz.Width) != 400 {
+		t.Fatalf("got width %f, want 400", sz.Width)
+	}
+	if int(sz.Height) != 400 {
+		t.Fatalf("got height %f, want 400", sz.Height)
+	}
+}
+
 func TestGet(t *testing.T) {
 	t.Parallel()
 	wd := newRemote("TestGet", t).T(t)

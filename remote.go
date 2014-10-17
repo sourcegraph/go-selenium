@@ -437,6 +437,16 @@ func (wd *remoteWebDriver) WindowPosition(name string) (pt *Point, err error) {
 	return
 }
 
+func (wd *remoteWebDriver) ResizeWindow(name string, to Size) error {
+	url := wd.url("/session/%s/window/%s/size", wd.id, name)
+	data, err := json.Marshal(to)
+	if err != nil {
+		return err
+	}
+	_, err = wd.send("POST", url, data)
+	return err
+}
+
 func (wd *remoteWebDriver) SwitchFrame(frame string) error {
 	params := map[string]string{"id": frame}
 	return wd.voidCommand("/session/%s/frame", params)

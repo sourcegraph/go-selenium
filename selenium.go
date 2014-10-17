@@ -106,7 +106,8 @@ type Point struct {
 
 /* Size */
 type Size struct {
-	Width, Height float64
+	Width  float64 `json:"width"`
+	Height float64 `json:"height"`
 }
 
 /* Cookie */
@@ -171,6 +172,9 @@ type WebDriver interface {
 	WindowSize(name string) (*Size, error)
 	/* Get window position */
 	WindowPosition(name string) (*Point, error)
+
+	// ResizeWindow resizes the named window.
+	ResizeWindow(name string, to Size) error
 
 	// Navigation
 	/* Open url. */

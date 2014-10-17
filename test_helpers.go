@@ -24,6 +24,7 @@ type WebDriverT interface {
 	CloseWindow(name string)
 	WindowSize(name string) *Size
 	WindowPosition(name string) *Point
+	ResizeWindow(name string, to Size)
 
 	Get(url string)
 	Forward()
@@ -174,6 +175,12 @@ func (wt *webDriverT) WindowPosition(name string) *Point {
 		wt.t.Fatalf("WindowPosition(%q): %s", name, err)
 	}
 	return pt
+}
+
+func (wt *webDriverT) ResizeWindow(name string, to Size) {
+	if err := wt.d.ResizeWindow(name, to); err != nil {
+		wt.t.Fatalf("ResizeWindow(%s, %+v): %s", name, to, err)
+	}
 }
 
 func (wt *webDriverT) Get(name string) {
