@@ -310,6 +310,8 @@ type WebElement interface {
 	T(t TestingT) WebElementT
 }
 
+// TestingT is a subset of the testing.T interface (to avoid needing
+// to import "testing", which registers global command-line flags).
 type TestingT interface {
 	Fatalf(fmt string, v ...interface{})
 }
