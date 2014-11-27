@@ -2,9 +2,7 @@
 go-selenium - Selenium WebDriver client for Go
 ==============================================
 
-[![xrefs](https://sourcegraph.com/api/repos/github.com/sourcegraph/go-selenium/badges/xrefs.png)](https://sourcegraph.com/github.com/sourcegraph/go-selenium)
-[![funcs](https://sourcegraph.com/api/repos/github.com/sourcegraph/go-selenium/badges/funcs.png)](https://sourcegraph.com/github.com/sourcegraph/go-selenium)
-[![top func](https://sourcegraph.com/api/repos/github.com/sourcegraph/go-selenium/badges/top-func.png)](https://sourcegraph.com/github.com/sourcegraph/go-selenium)
+[![status](https://sourcegraph.com/api/repos/sourcegraph.com/sourcegraph/go-selenium/badges/status.png)](https://sourcegraph.com/sourcegraph/go-selenium)
 
 go-selenium is a [Selenium](http://seleniumhq.org) WebDriver client for [Go](http://golang.org).
 
@@ -14,16 +12,16 @@ Note: the public API is experimental and subject to change until further notice.
 Usage
 =====
 
-Documentation: [go-selenium on Sourcegraph](https://sourcegraph.com/github.com/sourcegraph/go-selenium).
+Documentation: [go-selenium on Sourcegraph](https://sourcegraph.com/sourcegraph/go-selenium).
 
-Example: [example_test.go](https://github.com/sourcegraph/go-selenium/blob/master/example_test.go):
+Example: see example_test.go:
 
 ```go
 package selenium_test
 
 import (
 	"fmt"
-	"github.com/sourcegraph/go-selenium"
+	"sourcegraph.com/sourcegraph/go-selenium"
 )
 
 func ExampleFindElement() {
@@ -36,7 +34,7 @@ func ExampleFindElement() {
 	}
 	defer webDriver.Quit()
 
-	err = webDriver.Get("https://github.com/sourcegraph/go-selenium")
+	err = webDriver.Get("https://sourcegraph.com/sourcegraph/go-selenium")
 	if err != nil {
 		fmt.Printf("Failed to load page: %s\n", err)
 		return
@@ -50,7 +48,7 @@ func ExampleFindElement() {
 	}
 
 	var elem selenium.WebElement
-	elem, err = webDriver.FindElement(selenium.ByCSSSelector, ".js-current-repository")
+	elem, err = webDriver.FindElement(selenium.ByCSSSelector, ".repo .name")
 	if err != nil {
 		fmt.Printf("Failed to find element: %s\n", err)
 		return
@@ -64,7 +62,7 @@ func ExampleFindElement() {
 	}
 
 	// output:
-	// Page title: sourcegraph/go-selenium · GitHub
+	// Page title: go-selenium - Sourcegraph
 	// Repository: go-selenium
 }
 ```
@@ -77,7 +75,7 @@ from the return values and instead calls `t.Fatalf` upon encountering an error. 
 package mytest
 
 import (
-  "github.com/sourcegraph/go-selenium"
+  "sourcegraph.com/sourcegraph/go-selenium"
   "testing"
 )
 
@@ -107,8 +105,7 @@ func TestWithT(t *testing.T) {
 }
 ```
 
-See [remote_test.go](https://github.com/sourcegraph/go-selenium/blob/master/remote_test.go) for more usage
-examples.
+See remote_test.go for more usage examples.
 
 
 
