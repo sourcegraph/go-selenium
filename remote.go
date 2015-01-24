@@ -178,6 +178,12 @@ func (r *reply) readValue(v interface{}) error {
 	return json.Unmarshal(r.Value, v)
 }
 
+// An active session.
+type Session struct {
+	Id           string
+	Capabilities Capabilities
+}
+
 /* Create new remote client, this will also start a new session.
    capabilities - the desired capabilities, see http://goo.gl/SNlAk
    executor - the URL to the Selenim server
@@ -241,6 +247,14 @@ func (wd *remoteWebDriver) Status() (v *Status, err error) {
 	var r *reply
 	if r, err = wd.send("GET", wd.url("/status"), nil); err == nil {
 		err = r.readValue(&v)
+	}
+	return
+}
+
+func (wd *remoteWebDriver) Sessions() (sessions []Session, err error) {
+	var r *reply
+	if r, err = wd.send("GET", wd.url("/sessions"), nil); err == nil {
+		err = r.readValue(&sessions)
 	}
 	return
 }

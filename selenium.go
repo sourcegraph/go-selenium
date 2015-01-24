@@ -124,6 +124,9 @@ type WebDriver interface {
 	/* Status (info) on server */
 	Status() (*Status, error)
 
+	/* List of actions on the server. */
+	Sessions() ([]Session, error)
+
 	/* Start a new session, return session id */
 	NewSession() (string, error)
 
