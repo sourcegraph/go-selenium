@@ -49,6 +49,20 @@ func TestStatus(t *testing.T) {
 	}
 }
 
+func TestSessions(t *testing.T) {
+	if *grid {
+		t.Skip()
+	}
+	t.Parallel()
+	wd := newRemote("TestSessions", t)
+	defer wd.Quit()
+
+	_, err := wd.Sessions()
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
 func TestNewSession(t *testing.T) {
 	t.Parallel()
 	if *runOnSauce {
