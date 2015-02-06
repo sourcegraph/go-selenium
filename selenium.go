@@ -1,4 +1,4 @@
-package selenium // import "sourcegraph.com/sourcegraph/go-selenium"
+package selenium /* import "sourcegraph.com/sourcegraph/go-selenium" */
 
 /* Element finding options */
 const (
