@@ -12,7 +12,7 @@ Note: the public API is experimental and subject to change until further notice.
 Usage
 =====
 
-Documentation: [go-selenium on Sourcegraph](https://sourcegraph.com/sourcegraph/go-selenium).
+Documentation: [go-selenium on Sourcegraph](https://godoc.org/github.com/carstn/go-selenium).
 
 Example: see example_test.go:
 
@@ -21,7 +21,7 @@ package selenium_test
 
 import (
 	"fmt"
-	"sourcegraph.com/sourcegraph/go-selenium"
+	"github.com/carstn/go-selenium"
 )
 
 func ExampleFindElement() {
