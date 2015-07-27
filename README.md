@@ -2,7 +2,7 @@
 go-selenium - Selenium WebDriver client for Go
 ==============================================
 
-[![status](https://sourcegraph.com/api/repos/sourcegraph.com/sourcegraph/go-selenium/badges/status.png)](https://sourcegraph.com/sourcegraph/go-selenium)
+[![status](https://sourcegraph.com/api/repos/github.com/carstn/go-selenium/badges/status.png)](https://github.com/carstn/go-selenium)
 
 go-selenium is a [Selenium](http://seleniumhq.org) WebDriver client for [Go](http://golang.org).
 
@@ -34,7 +34,7 @@ func ExampleFindElement() {
 	}
 	defer webDriver.Quit()
 
-	err = webDriver.Get("https://sourcegraph.com/sourcegraph/go-selenium")
+	err = webDriver.Get("https://github.com/carstn/go-selenium")
 	if err != nil {
 		fmt.Printf("Failed to load page: %s\n", err)
 		return
@@ -75,7 +75,7 @@ from the return values and instead calls `t.Fatalf` upon encountering an error. 
 package mytest
 
 import (
-  "sourcegraph.com/sourcegraph/go-selenium"
+  "github.com/carstn/go-selenium"
   "testing"
 )
 

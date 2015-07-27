@@ -16,7 +16,7 @@ func ExampleFindElement() {
 	}
 	defer webDriver.Quit()
 
-	err = webDriver.Get("https://sourcegraph.com/sourcegraph/go-selenium")
+	err = webDriver.Get("https://github.com/carstn/go-selenium")
 	if err != nil {
 		fmt.Printf("Failed to load page: %s\n", err)
 		return
