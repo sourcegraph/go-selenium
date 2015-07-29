@@ -1,4 +1,4 @@
-package selenium // import "github.com/carstn/go-selenium"
+package selenium
 
 /* Element finding options */
 const (
