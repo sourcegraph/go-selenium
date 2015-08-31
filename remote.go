@@ -294,6 +294,10 @@ func (wd *remoteWebDriver) SetImplicitWaitTimeout(ms uint) error {
 	return wd.voidCommand("/session/%s/timeouts/implicit_wait", timeoutParam{ms})
 }
 
+func (wd *remoteWebDriver) SetPageLoadTimeout(ms uint) error {
+	return wd.voidCommand("/session/%s/timeouts/page_load", timeoutParam{ms})
+}
+
 func (wd *remoteWebDriver) AvailableEngines() ([]string, error) {
 	return wd.stringsCommand("/session/%s/ime/available_engines")
 }
