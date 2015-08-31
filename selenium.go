@@ -1,4 +1,4 @@
-package selenium // import "sourcegraph.com/sourcegraph/go-selenium"
+package selenium
 
 /* Element finding options */
 const (
@@ -136,6 +136,8 @@ type WebDriver interface {
 	SetAsyncScriptTimeout(ms uint) error
 	/* Set the amount of time, in milliseconds, the driver should wait when searching for elements. */
 	SetImplicitWaitTimeout(ms uint) error
+	/* Set the amount of time, in milliseconds, the driver should wait when loading a page. */
+	SetPageLoadTimeout(ms uint) error
 
 	// IME
 	/* List all available engines on the machine. */

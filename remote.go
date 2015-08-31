@@ -15,11 +15,11 @@ import (
 	"log"
 	"net/http"
 	"net/http/httputil"
-	"os"
 	"strings"
 )
 
-var Log = log.New(os.Stderr, "[selenium] ", log.Ltime|log.Lmicroseconds)
+//var Log = log.New(os.Stderr, "[selenium] ", log.Ltime|log.Lmicroseconds)
+var Log = log.New(ioutil.Discard, "[selenium] ", log.Ltime|log.Lmicroseconds)
 var Trace bool
 
 /* Errors returned by Selenium server. */
@@ -292,6 +292,10 @@ func (wd *remoteWebDriver) SetAsyncScriptTimeout(ms uint) error {
 
 func (wd *remoteWebDriver) SetImplicitWaitTimeout(ms uint) error {
 	return wd.voidCommand("/session/%s/timeouts/implicit_wait", timeoutParam{ms})
+}
+
+func (wd *remoteWebDriver) SetPageLoadTimeout(ms uint) error {
+	return wd.voidCommand("/session/%s/timeouts/page_load", timeoutParam{ms})
 }
 
 func (wd *remoteWebDriver) AvailableEngines() ([]string, error) {
