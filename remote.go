@@ -466,6 +466,10 @@ func (wd *remoteWebDriver) SwitchFrame(frame string) error {
 	return wd.voidCommand("/session/%s/frame", params)
 }
 
+func (wd *remoteWebDriver) SwitchFrameParent() error {
+	return wd.voidCommand("/session/%s/frame/parent", nil)
+}
+
 func (wd *remoteWebDriver) ActiveElement() (WebElement, error) {
 	url := wd.url("/session/%s/element/active", wd.id)
 	if r, err := wd.send("GET", url, nil); err == nil {

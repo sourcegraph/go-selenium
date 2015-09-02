@@ -28,6 +28,7 @@ type WebDriverT interface {
 	PageSource() string
 	Close()
 	SwitchFrame(frame string)
+	SwitchFrameParent()
 	SwitchWindow(name string)
 	CloseWindow(name string)
 	WindowSize(name string) *Size
@@ -154,6 +155,12 @@ func (wt *webDriverT) Close() {
 func (wt *webDriverT) SwitchFrame(frame string) {
 	if err := wt.d.SwitchFrame(frame); err != nil {
 		fatalf(wt.t, "SwitchFrame(%q): %s", frame, err)
+	}
+}
+
+func (wt *webDriverT) SwitchFrameParent() {
+	if err := wt.d.SwitchFrameParent(); err != nil {
+		fatalf(wt.t, "SwitchFrameParent(): %s", err)
 	}
 }
 
