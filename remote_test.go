@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strings"
 	"testing"
+	"time"
 )
 
 var grid = flag.Bool("test.grid", false, "skip tests that fail on Selenium Grid")
@@ -354,6 +355,10 @@ func TestGetCookies(t *testing.T) {
 	if cookies[0].Name == "" {
 		t.Fatal("Empty cookie")
 	}
+
+	if cookies[0].Expiry != uint(cookieExpiry.Unix()) {
+		t.Fatalf("Bad expiry time: expected %v, got %v", cookieExpiry, cookies[0].Expiry)
+	}
 }
 
 func TestAddCookie(t *testing.T) {
@@ -550,6 +555,8 @@ var pages = map[string]string{
 	"/search": searchPage,
 }
 
+var cookieExpiry = time.Now().Add(1 * time.Hour).UTC()
+
 func handler(w http.ResponseWriter, r *http.Request) {
 	path := r.URL.Path
 	page, ok := pages[path]
@@ -566,8 +573,9 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	for i := 0; i < 3; i++ {
 		name := fmt.Sprintf("cookie-%d", i)
 		value := fmt.Sprintf("value-%d", i)
-		http.SetCookie(w, &http.Cookie{Name: name, Value: value})
+		http.SetCookie(w, &http.Cookie{Name: name, Value: value, Expires: cookieExpiry})
 	}
+
 	fmt.Fprintf(w, page)
 }
 

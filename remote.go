@@ -483,8 +483,31 @@ func (wd *remoteWebDriver) GetCookies() (c []Cookie, err error) {
 	var r *reply
 	if r, err = wd.send("GET", wd.url("/session/%s/cookie", wd.id), nil); err == nil {
 		err = r.readValue(&c)
+		if err == nil {
+			parseCookieExpiry(&c, r.Value)
+		}
 	}
 	return
+}
+
+func parseCookieExpiry(cookies *[]Cookie, raw json.RawMessage) {
+	var expiries []struct {
+		Expiry json.Number
+	}
+
+	err := json.Unmarshal(raw, &expiries)
+	if err != nil {
+		return
+	}
+
+	for i, _ := range *cookies {
+		expiry, err := expiries[i].Expiry.Float64()
+		if err != nil {
+			continue
+		}
+
+		(*cookies)[i].Expiry = uint(expiry)
+	}
 }
 
 func (wd *remoteWebDriver) AddCookie(cookie *Cookie) error {
