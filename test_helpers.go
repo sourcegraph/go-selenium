@@ -17,8 +17,10 @@ type WebDriverT interface {
 
 	NewSession() string
 
+	SetTimeout(timeoutType string, ms uint)
 	SetAsyncScriptTimeout(ms uint)
 	SetImplicitWaitTimeout(ms uint)
+
 	Quit()
 
 	CurrentWindowHandle() string
@@ -86,6 +88,12 @@ func (wt *webDriverT) NewSession() (id string) {
 		fatalf(wt.t, "NewSession: %s", err)
 	}
 	return
+}
+
+func (wt *webDriverT) SetTimeout(timeoutType string, ms uint) {
+	if err := wt.d.SetTimeout(timeoutType, ms); err != nil {
+		fatalf(wt.t, "SetTimeout(timeoutType=%q, ms=%d): %s", timeoutType, ms, err)
+	}
 }
 
 func (wt *webDriverT) SetAsyncScriptTimeout(ms uint) {
