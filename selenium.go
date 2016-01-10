@@ -132,6 +132,10 @@ type WebDriver interface {
 
 	/* Current session capabilities */
 	Capabilities() (Capabilities, error)
+
+	/* Configure the amount of time a particular type of operation can execute for before it is aborted.
+	   Valid types: "script" for script timeouts, "implicit" for modifying the implicit wait timeout and "page load" for setting a page load timeout. */
+	SetTimeout(timeoutType string, ms uint) error
 	/* Set the amount of time, in milliseconds, that asynchronous scripts are permitted to run before they are aborted. */
 	SetAsyncScriptTimeout(ms uint) error
 	/* Set the amount of time, in milliseconds, the driver should wait when searching for elements. */
@@ -207,7 +211,7 @@ type WebDriver interface {
 	// Cookies
 	/* Get all cookies */
 	GetCookies() ([]Cookie, error)
-	/* Add a cookies */
+	/* Add a cookie */
 	AddCookie(cookie *Cookie) error
 	/* Delete all cookies */
 	DeleteAllCookies() error

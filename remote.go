@@ -282,16 +282,19 @@ func (wd *remoteWebDriver) Capabilities() (v Capabilities, err error) {
 	return
 }
 
-type timeoutParam struct {
-	Ms uint `json:"ms"`
+func (wd *remoteWebDriver) SetTimeout(timeoutType string, ms uint) error {
+	params := map[string]interface{}{"type": timeoutType, "ms": ms}
+	return wd.voidCommand("/session/%s/timeouts", params)
 }
 
 func (wd *remoteWebDriver) SetAsyncScriptTimeout(ms uint) error {
-	return wd.voidCommand("/session/%s/timeouts/async_script", timeoutParam{ms})
+	params := map[string]uint{"ms": ms}
+	return wd.voidCommand("/session/%s/timeouts/async_script", params)
 }
 
 func (wd *remoteWebDriver) SetImplicitWaitTimeout(ms uint) error {
-	return wd.voidCommand("/session/%s/timeouts/implicit_wait", timeoutParam{ms})
+	params := map[string]uint{"ms": ms}
+	return wd.voidCommand("/session/%s/timeouts/implicit_wait", params)
 }
 
 func (wd *remoteWebDriver) AvailableEngines() ([]string, error) {

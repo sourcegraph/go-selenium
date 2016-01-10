@@ -101,6 +101,16 @@ func TestCapabilities(t *testing.T) {
 	}
 }
 
+func TestSetTimeout(t *testing.T) {
+	t.Parallel()
+	wd := newRemote("TestSetTimeout", t).T(t)
+	defer wd.Quit()
+
+	wd.SetTimeout("script", 200)
+	wd.SetTimeout("implicit", 200)
+	wd.SetTimeout("page load", 200)
+}
+
 func TestSetAsyncScriptTimeout(t *testing.T) {
 	t.Parallel()
 	wd := newRemote("TestSetAsyncScriptTimeout", t).T(t)
@@ -378,6 +388,25 @@ func TestAddCookie(t *testing.T) {
 	}
 
 	t.Fatal("Can't find new cookie")
+}
+
+func TestDeleteAllCookies(t *testing.T) {
+	t.Parallel()
+	wd := newRemote("TestDeleteCookie", t).T(t)
+	defer wd.Quit()
+
+	wd.Get(serverURL)
+	cookies := wd.GetCookies()
+	if len(cookies) == 0 {
+		t.Fatal("No cookies")
+	}
+
+	wd.DeleteAllCookies()
+
+	newCookies := wd.GetCookies()
+	if len(newCookies) != 0 {
+		t.Fatal("Cookies not deleted")
+	}
 }
 
 func TestDeleteCookie(t *testing.T) {
