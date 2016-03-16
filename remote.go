@@ -189,7 +189,6 @@ type Session struct {
    executor - the URL to the Selenim server
 */
 func NewRemote(capabilities Capabilities, executor string) (WebDriver, error) {
-
 	if executor == "" {
 		executor = defaultExecutor
 	}
@@ -259,19 +258,24 @@ func (wd *remoteWebDriver) Sessions() (sessions []Session, err error) {
 	return
 }
 
-func (wd *remoteWebDriver) NewSession() (sessionId string, err error) {
+func (wd *remoteWebDriver) NewSession() (string, error) {
 	message := map[string]interface{}{
 		"desiredCapabilities": wd.capabilities,
 	}
+
 	var data []byte
-	if data, err = json.Marshal(message); err != nil {
-		return
+	data, err := json.Marshal(message)
+	if err != nil {
+		return "", err
 	}
-	if r, err := wd.send("POST", wd.url("/session"), data); err == nil {
-		sessionId = r.SessionId
-		wd.id = r.SessionId
+
+	r, err := wd.send("POST", wd.url("/session"), data)
+	if err != nil {
+		return "", err
 	}
-	return
+	wd.id = r.SessionId
+
+	return r.SessionId, nil
 }
 
 func (wd *remoteWebDriver) Capabilities() (v Capabilities, err error) {
