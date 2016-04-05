@@ -584,6 +584,11 @@ func (wd *remoteWebDriver) execScript(script string, args []interface{}, suffix 
 	if args == nil {
 		args = []interface{}{}
 	}
+	for i, arg := range args {
+		if v, ok := arg.(*remoteWE); ok {
+			args[i] = &element{Element: v.id}
+		}
+	}
 	params := map[string]interface{}{
 		"script": script,
 		"args":   args,
