@@ -126,7 +126,7 @@ Contributors
 
 * Quinn Slack <sqs@sourcegraph.com>
 * Miki Tebeka <miki.tebeka@gmail.com> (go-selenium is based on Miki's
-  [bitbucket.org/tebekas/selenium](https://bitbucket.org/tebeka/selenium) library)
+  [github.com/tebeka/selenium](https://github.com/tebeka/selenium) library)
 
 
 License
