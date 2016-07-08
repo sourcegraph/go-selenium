@@ -431,6 +431,9 @@ func (wd *remoteWebDriver) Close() error {
 }
 
 func (wd *remoteWebDriver) SwitchWindow(name string) error {
+	if name == "" {
+		name = "current"
+	}
 	params := map[string]string{"name": name}
 	return wd.voidCommand("/session/%s/window", params)
 }
@@ -441,6 +444,9 @@ func (wd *remoteWebDriver) CloseWindow(name string) error {
 }
 
 func (wd *remoteWebDriver) WindowSize(name string) (sz *Size, err error) {
+	if name == "" {
+		name = "current"
+	}
 	url := wd.url("/session/%s/window/%s/size", wd.id, name)
 	var r *reply
 	if r, err = wd.send("GET", url, nil); err == nil {
@@ -450,6 +456,9 @@ func (wd *remoteWebDriver) WindowSize(name string) (sz *Size, err error) {
 }
 
 func (wd *remoteWebDriver) WindowPosition(name string) (pt *Point, err error) {
+	if name == "" {
+		name = "current"
+	}
 	url := wd.url("/session/%s/window/%s/position", wd.id, name)
 	var r *reply
 	if r, err = wd.send("GET", url, nil); err == nil {
@@ -459,6 +468,9 @@ func (wd *remoteWebDriver) WindowPosition(name string) (pt *Point, err error) {
 }
 
 func (wd *remoteWebDriver) ResizeWindow(name string, to Size) error {
+	if name == "" {
+		name = "current"
+	}
 	url := wd.url("/session/%s/window/%s/size", wd.id, name)
 	data, err := json.Marshal(to)
 	if err != nil {
