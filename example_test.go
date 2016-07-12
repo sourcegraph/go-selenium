@@ -16,7 +16,7 @@ func ExampleFindElement() {
 	}
 	defer webDriver.Quit()
 
-	err = webDriver.Get("https://sourcegraph.com/sourcegraph/go-selenium")
+	err = webDriver.Get("https://github.com/sourcegraph/go-selenium")
 	if err != nil {
 		fmt.Printf("Failed to load page: %s\n", err)
 		return
@@ -30,20 +30,20 @@ func ExampleFindElement() {
 	}
 
 	var elem selenium.WebElement
-	elem, err = webDriver.FindElement(selenium.ByCSSSelector, ".repo .name")
+	elem, err = webDriver.FindElement(selenium.ByCSSSelector, ".author")
 	if err != nil {
 		fmt.Printf("Failed to find element: %s\n", err)
 		return
 	}
 
 	if text, err := elem.Text(); err == nil {
-		fmt.Printf("Repository: %s\n", text)
+		fmt.Printf("Author: %s\n", text)
 	} else {
 		fmt.Printf("Failed to get text of element: %s\n", err)
 		return
 	}
 
 	// output:
-	// Page title: go-selenium - Sourcegraph
-	// Repository: go-selenium
+	// Page title: GitHub - sourcegraph/go-selenium: Selenium WebDriver client for Go
+	// Author: sourcegraph
 }
