@@ -350,6 +350,28 @@ func TestClick(t *testing.T) {
 	}
 }
 
+func TestClick_Hidden(t *testing.T) {
+	t.Parallel()
+	wd := newRemote("TestClick_Hidden", t)
+	defer wd.Quit()
+
+	if err := wd.Get(serverURL); err != nil {
+		t.Fatal(err)
+	}
+	e, err := wd.FindElement(ByName, "hidden_name")
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = e.Click()
+	if err == nil {
+		t.Fatal("expected clicking on hidden element to error")
+	}
+	want := "element not visible"
+	if err.Error() != want {
+		t.Fatalf("got error %v, want %v", err.Error(), want)
+	}
+}
+
 func TestGetCookies(t *testing.T) {
 	t.Parallel()
 	wd := newRemote("TestGetCookies", t).T(t)
@@ -540,6 +562,7 @@ var homePage = `
 	<form action="/search">
 		<input name="q" /> <input type="submit" id="submit"/> <br />
 		<input id="chuk" type="checkbox" /> A checkbox.
+		<input type="hidden" name="hidden_name" />
 	</form>
     <ol class="list">
       <li>foo</li>
