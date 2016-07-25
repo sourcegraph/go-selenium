@@ -1,5 +1,7 @@
 package selenium // import "sourcegraph.com/sourcegraph/go-selenium"
 
+import "io"
+
 /* Element finding options */
 const (
 	ById              = "id"
@@ -235,7 +237,7 @@ type WebDriver interface {
 	modifier can be one of ShiftKey, ControlKey, AltKey, MetaKey.
 	*/
 	SendModifier(modifier string, isDown bool) error
-	Screenshot() ([]byte, error)
+	Screenshot() (io.Reader, error)
 
 	// Alerts
 	/* Dismiss current alert. */

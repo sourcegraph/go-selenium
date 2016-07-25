@@ -11,6 +11,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -625,7 +626,7 @@ func (wd *remoteWebDriver) ExecuteScriptAsync(script string, args []interface{})
 	return wd.execScript(script, args, "_async")
 }
 
-func (wd *remoteWebDriver) Screenshot() ([]byte, error) {
+func (wd *remoteWebDriver) Screenshot() (io.Reader, error) {
 	data, err := wd.stringCommand("/session/%s/screenshot")
 	if err != nil {
 		return nil, err
@@ -634,7 +635,7 @@ func (wd *remoteWebDriver) Screenshot() ([]byte, error) {
 	// Selenium returns base64 encoded image
 	buf := []byte(data)
 	decoder := base64.NewDecoder(base64.StdEncoding, bytes.NewBuffer(buf))
-	return ioutil.ReadAll(decoder)
+	return decoder, nil
 }
 
 func (wd *remoteWebDriver) T(t TestingT) WebDriverT {
