@@ -2,6 +2,7 @@ package selenium
 
 import (
 	"fmt"
+	"io"
 	"path/filepath"
 	"runtime"
 	"strconv"
@@ -62,7 +63,7 @@ type WebDriverT interface {
 	ButtonUp()
 
 	SendModifier(modifier string, isDown bool)
-	Screenshot() []byte
+	Screenshot() io.Reader
 
 	DismissAlert()
 	AcceptAlert()
@@ -323,7 +324,7 @@ func (wt *webDriverT) SendModifier(modifier string, isDown bool) {
 	}
 }
 
-func (wt *webDriverT) Screenshot() (data []byte) {
+func (wt *webDriverT) Screenshot() (data io.Reader) {
 	var err error
 	if data, err = wt.d.Screenshot(); err != nil {
 		fatalf(wt.t, "Screenshot: %s", err)
