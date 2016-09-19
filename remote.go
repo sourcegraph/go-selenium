@@ -7,6 +7,7 @@ package selenium
 
 import (
 	"bytes"
+	"context"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
@@ -18,6 +19,7 @@ import (
 	"net/http/httputil"
 	"os"
 	"strings"
+	"sync"
 )
 
 var Log = log.New(os.Stderr, "[selenium] ", log.Ltime|log.Lmicroseconds)
@@ -57,6 +59,14 @@ type remoteWebDriver struct {
 	capabilities Capabilities
 	// FIXME
 	// profile             BrowserProfile
+	ctx context.Context
+
+	haveQuitMu sync.Mutex
+	haveQuit   bool
+}
+
+func (wd *remoteWebDriver) SetContext(ctx context.Context) {
+	wd.ctx = ctx
 }
 
 func (wd *remoteWebDriver) url(template string, args ...interface{}) string {
@@ -74,7 +84,29 @@ func (wd *remoteWebDriver) send(method, url string, data []byte) (r *reply, err 
 	return
 }
 
-func (wd *remoteWebDriver) execute(method, url string, data []byte) ([]byte, error) {
+// ErrCanceled is returned when the context is cancelled.
+var ErrCanceled = errors.New("cancelled")
+
+func (wd *remoteWebDriver) execute(method, url string, data []byte) (buf []byte, err error) {
+	select {
+	case <-wd.ctx.Done():
+		err = ErrCanceled
+		wd.ctx = context.Background()
+		_ = wd.Quit()
+		return
+	default:
+	}
+	defer func() {
+		select {
+		case <-wd.ctx.Done():
+			err = ErrCanceled
+			wd.ctx = context.Background()
+			_ = wd.Quit()
+			return
+		default:
+		}
+	}()
+
 	if Log != nil {
 		Log.Printf("-> %s %s [%d bytes]", method, url, len(data))
 	}
@@ -93,6 +125,8 @@ func (wd *remoteWebDriver) execute(method, url string, data []byte) ([]byte, err
 		}
 	}
 
+	req = req.WithContext(wd.ctx)
+
 	res, err := httpClient.Do(req)
 	if err != nil {
 		return nil, err
@@ -104,7 +138,7 @@ func (wd *remoteWebDriver) execute(method, url string, data []byte) ([]byte, err
 		}
 	}
 
-	buf, err := ioutil.ReadAll(res.Body)
+	buf, err = ioutil.ReadAll(res.Body)
 	if err != nil {
 		return nil, err
 	}
@@ -194,7 +228,11 @@ func NewRemote(capabilities Capabilities, executor string) (WebDriver, error) {
 		executor = defaultExecutor
 	}
 
-	wd := &remoteWebDriver{executor: executor, capabilities: capabilities}
+	wd := &remoteWebDriver{
+		executor:     executor,
+		capabilities: capabilities,
+		ctx:          context.Background(),
+	}
 	// FIXME: Handle profile
 
 	_, err := wd.NewSession()
@@ -323,6 +361,18 @@ func (wd *remoteWebDriver) ActivateEngine(engine string) (err error) {
 }
 
 func (wd *remoteWebDriver) Quit() (err error) {
+	wd.haveQuitMu.Lock()
+	defer wd.haveQuitMu.Unlock()
+	if wd.haveQuit {
+		// Double-Quit is an error-free no-op.
+		return nil
+	}
+	wd.haveQuit = true
+	// Quit is the one method which cannot be canceled.
+	// It's also the last thing that happens in a webdriver, so we can
+	// kill the context here.
+	wd.ctx = context.Background()
+
 	if _, err = wd.execute("DELETE", wd.url("/session/%s", wd.id), nil); err == nil {
 		wd.id = ""
 	}

@@ -1,4 +1,5 @@
 package selenium // import "sourcegraph.com/sourcegraph/go-selenium"
+import "context"
 
 import "io"
 
@@ -123,6 +124,8 @@ type Cookie struct {
 }
 
 type WebDriver interface {
+	SetContext(context.Context)
+
 	/* Status (info) on server */
 	Status() (*Status, error)
 
