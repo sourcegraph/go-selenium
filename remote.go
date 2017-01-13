@@ -131,6 +131,7 @@ func (wd *remoteWebDriver) execute(method, url string, data []byte) (buf []byte,
 	if err != nil {
 		return nil, err
 	}
+	defer res.Body.Close()
 
 	if Trace {
 		if dump, err := httputil.DumpResponse(res, true); err == nil && Log != nil {
