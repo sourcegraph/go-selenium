@@ -130,4 +130,4 @@ Contributors
 License
 =======
 
-go-selenium is distributed under the Eclipse Public License.
+go-selenium is distributed under the MIT License.
