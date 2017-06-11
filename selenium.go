@@ -82,7 +82,7 @@ const (
 )
 
 /* Browser capabilities, see
-http://code.google.com/p/selenium/wiki/JsonWireProtocol#Capabilities_JSON_Object
+https://github.com/SeleniumHQ/selenium/wiki/JsonWireProtocol#capabilities-json-object
 */
 type Capabilities map[string]interface{}
 
