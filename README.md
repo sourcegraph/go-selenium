@@ -4,7 +4,7 @@ go-selenium - Selenium WebDriver client for Go
 
 go-selenium is a [Selenium](http://seleniumhq.org) WebDriver client for [Go](http://golang.org).
 
-Note: the public API is experimental and subject to change until further notice.
+Note: The public API is experimental and subject to change until further notice.
 
 
 Usage
@@ -65,7 +65,7 @@ func ExampleFindElement() {
 }
 ```
 
-The `WebDriverT` and `WebElementT` interfaces make test code cleaner. Each method in
+The `WebDriverT` and `WebElementT` interfaces make the test code cleaner. Each method in
 `WebDriver` and `WebElement` has a corresponding method in the `*T` interfaces that omits the error
 from the return values and instead calls `t.Fatalf` upon encountering an error. For example:
 
