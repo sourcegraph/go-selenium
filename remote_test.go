@@ -3,7 +3,6 @@ package selenium
 import (
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"strings"
 	"testing"
@@ -526,7 +525,7 @@ func TestScreenshot(t *testing.T) {
 	wd.Get(serverURL)
 	dataReader := wd.Screenshot()
 
-	data, err := ioutil.ReadAll(dataReader)
+	data, err := io.ReadAll(dataReader)
 	if err != nil {
 		t.Fatal("failed to read screenshot data")
 	}

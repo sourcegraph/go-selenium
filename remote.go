@@ -13,7 +13,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"net/http/httputil"
@@ -139,7 +138,7 @@ func (wd *remoteWebDriver) execute(method, url string, data []byte) (buf []byte,
 		}
 	}
 
-	buf, err = ioutil.ReadAll(res.Body)
+	buf, err = io.ReadAll(res.Body)
 	if err != nil {
 		return nil, err
 	}
